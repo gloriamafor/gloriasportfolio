@@ -643,6 +643,19 @@ body.offcanvas {
 .timeline-centered .timeline-entry .timeline-entry-inner .timeline-label .experience-list li {
   margin-bottom: 0.45em; }
 
+.colorlib-about .services-row,
+.colorlib-services .services-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch; }
+  .colorlib-about .services-row > [class*="col-"],
+  .colorlib-services .services-row > [class*="col-"] {
+    display: flex;
+    float: none; }
+  .colorlib-about .services-row .services,
+  .colorlib-services .services-row .services {
+    width: 100%; }
+
 .services {
   margin-bottom: 30px;
   padding: 1.5em;
