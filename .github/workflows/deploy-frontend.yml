@@ -1,0 +1,40 @@
+name: Deploy Gloria's Portfolio
+
+on:
+  push:
+    branches: [main]   # triggers every time I push to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pull my latest code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Connect to AWS using my secret credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2   # my bucket is in this region
+
+      # 3. Upload my portfolio files to S3 (skips config/git files)
+      - name: Deploy to S3
+        run: |
+          aws s3 sync . s3://gloriasportfolio \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "prepros-6.config" \
+            --exclude "*.pdf" \
+            --exclude "sass/*" \
+            --delete
+
+      # 4. Clear CloudFront cache so your latest changes go live immediately
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id E2OTRPEB6BALWI \
+            --paths "/*"
