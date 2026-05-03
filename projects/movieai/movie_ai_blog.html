@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How I Built My Movie AI Recommendation System | Gloria Mafor</title>
+  <meta name="description" content="A detailed explanation of how I built a Movie AI Recommendation System using TMDB, OpenAI, and a mood-based recommendation workflow." />
+  <style>
+    :root{
+      --bg:#0f1220;
+      --surface:#171b2e;
+      --surface-2:#1f2540;
+      --card:#ffffff;
+      --text:#e9ecf8;
+      --muted:#b7bfdc;
+      --dark:#10131f;
+      --accent:#8b5cf6;
+      --accent-2:#ec4899;
+      --soft:#f5f3ff;
+      --line:rgba(255,255,255,.12);
+      --shadow:0 20px 45px rgba(0,0,0,.28);
+      --radius:22px;
+      --radius-sm:14px;
+      --max:1150px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(139,92,246,.22), transparent 30%),
+        radial-gradient(circle at top right, rgba(236,72,153,.14), transparent 25%),
+        linear-gradient(180deg, #0d1020 0%, #11162a 42%, #0f1220 100%);
+      line-height:1.7;
+    }
+    a{color:inherit}
+    .wrap{width:min(var(--max), calc(100% - 32px)); margin:0 auto}
+    .section{padding:80px 0}
+    .section-tight{padding:58px 0}
+    .hero{padding:90px 0 56px; position:relative; overflow:hidden;}
+    .hero-grid{display:grid; grid-template-columns: 1.15fr .85fr; gap:30px; align-items:center;}
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border:1px solid var(--line);
+      border-radius:999px; background:rgba(255,255,255,.04); color:#ddd7ff; font-size:.92rem; margin-bottom:18px;
+    }
+    h1,h2,h3{line-height:1.15; margin:0 0 16px}
+    h1{font-size:clamp(2.5rem, 5vw, 4.5rem); letter-spacing:-0.04em;}
+    h2{font-size:clamp(1.8rem, 3vw, 2.7rem); letter-spacing:-0.03em;}
+    h3{font-size:1.18rem; color:#fff;}
+    .hero p.lead{color:var(--muted); font-size:1.08rem; max-width:690px; margin:0 0 28px;}
+    .pill-row{display:flex; flex-wrap:wrap; gap:12px; margin:24px 0 32px;}
+    .pill{
+      padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--line);
+      color:#efeefe; font-size:.95rem;
+    }
+    .cta-row{display:flex; flex-wrap:wrap; gap:14px; margin-top:10px;}
+    .btn{
+      display:inline-block; text-decoration:none; padding:14px 18px; border-radius:14px; font-weight:700;
+      transition:transform .15s ease, opacity .15s ease;
+    }
+    .btn:hover{transform:translateY(-2px)}
+    .btn-primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:white; box-shadow:var(--shadow);}
+    .btn-secondary{border:1px solid var(--line); color:#f3f5ff; background:rgba(255,255,255,.04);}
+    .hero-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid var(--line); border-radius:28px; padding:24px; box-shadow:var(--shadow);
+      position:relative; min-height:420px;
+    }
+    .screen{
+      background:#0b0e1a; border-radius:22px; border:1px solid rgba(255,255,255,.07); overflow:hidden;
+      min-height:365px; display:flex; flex-direction:column;
+    }
+    .screen-top{display:flex; gap:8px; padding:14px 16px; background:#12162a; border-bottom:1px solid rgba(255,255,255,.06);}
+    .dot{width:11px;height:11px;border-radius:50%; background:#444b72;}
+    .screen-body{
+      padding:22px; display:grid; gap:16px; flex:1;
+      background: radial-gradient(circle at top right, rgba(139,92,246,.18), transparent 28%), linear-gradient(180deg, #0e1322 0%, #0b0e1a 100%);
+    }
+    .mini-card{background:#151a2f; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:16px;}
+    .mini-card strong{display:block; margin-bottom:8px; color:#fff;}
+    .stars{color:#ffd166; letter-spacing:2px}
+    .bar{height:8px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:10px;}
+    .bar > span{display:block;height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); width:74%;}
+    .stats{margin-top:18px; display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+    .stat{background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:18px; padding:18px;}
+    .stat b{display:block; font-size:1.6rem; margin-bottom:4px; color:#fff;}
+    .stat span{color:var(--muted); font-size:.95rem;}
+    .section-head{max-width:780px; margin-bottom:34px;}
+    .section-head p{color:var(--muted); margin:0;}
+    .grid-2{display:grid; grid-template-columns:repeat(2,1fr); gap:22px;}
+    .card{background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:22px; padding:26px; box-shadow:var(--shadow);}
+    .card.light{background:#ffffff; color:#1a1f33; border:none;}
+    .card.light p, .card.light li{color:#3f4764}
+    .card p:last-child{margin-bottom:0}
+    .list-clean{margin:0; padding-left:20px}
+    .list-clean li{margin-bottom:10px}
+    .timeline{display:grid; gap:18px; position:relative;}
+    .step{
+      display:grid; grid-template-columns:58px 1fr; gap:16px; align-items:start; padding:20px;
+      background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:20px;
+    }
+    .step-num{
+      width:58px; height:58px; border-radius:18px; display:grid; place-items:center; font-weight:800;
+      font-size:1.1rem; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow:var(--shadow);
+    }
+    .muted{color:var(--muted)}
+    .two-col{display:grid; grid-template-columns: 1fr 1fr; gap:22px;}
+    .highlight{border-left:4px solid #c084fc; padding-left:16px; color:#f5efff; margin:16px 0;}
+    .architecture{background:#fff; color:#171b2e; border-radius:28px; padding:28px; overflow:hidden; box-shadow:var(--shadow);}
+    .flow{display:grid; grid-template-columns: repeat(9, 1fr); gap:14px; align-items:stretch; margin-top:20px;}
+    .flow-card{background:linear-gradient(180deg, #faf7ff, #f7f9ff); border:1px solid #e6e9f7; border-radius:18px; padding:18px; position:relative;}
+    .flow-card h4{margin:0 0 8px; font-size:1rem; color:#1d2140;}
+    .flow-card p{margin:0; color:#4a5478; font-size:.95rem; line-height:1.55;}
+    .arrow{display:grid; place-items:center; color:#8b5cf6; font-weight:900; font-size:1.35rem;}
+    .feature-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+    .feature{background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:20px; padding:22px;}
+    .feature p{color:var(--muted)}
+    .quote{
+      background:linear-gradient(135deg, rgba(139,92,246,.18), rgba(236,72,153,.12));
+      border:1px solid var(--line); border-radius:24px; padding:30px; font-size:1.08rem; color:#f7f4ff;
+    }
+    .footer{padding:40px 0 70px; color:var(--muted); text-align:center;}
+    .tag{
+      display:inline-block; padding:7px 11px; border-radius:999px; font-size:.85rem; font-weight:700;
+      background:rgba(139,92,246,.14); color:#efe8ff; margin:0 8px 10px 0; border:1px solid rgba(255,255,255,.12);
+    }
+    @media (max-width: 980px){
+      .hero-grid, .grid-2, .two-col, .feature-grid, .flow{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .arrow{transform:rotate(90deg)}
+    }
+    @media (max-width: 620px){
+      .section{padding:64px 0}
+      .hero{padding-top:72px}
+      .stats{grid-template-columns:1fr}
+      .step{grid-template-columns:1fr}
+      .step-num{width:50px;height:50px;border-radius:14px}
+      .wrap{width:min(var(--max), calc(100% - 20px))}
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Portfolio Case Study • AI + Movies + Recommendation Design</div>
+        <h1>Movie AI Recommendation System</h1>
+        <p class="lead">
+          This project is a mood-based movie recommendation web app that helps users find films based on how they feel, what genres they enjoy, and the kind of experience they want. Instead of making people scroll endlessly through streaming platforms, I built a system that turns human emotion into useful movie suggestions.
+        </p>
+        <div class="pill-row">
+          <span class="pill">OpenAI-assisted search expansion</span>
+          <span class="pill">TMDB movie data</span>
+          <span class="pill">Mood-based recommendation flow</span>
+          <span class="pill">Frontend + backend integration</span>
+        </div>
+        <div class="cta-row">
+          <a href="#overview" class="btn btn-primary">Read the walkthrough</a>
+          <a href="#architecture" class="btn btn-secondary">See system flow</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="screen">
+          <div class="screen-top">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="screen-body">
+            <div class="mini-card">
+              <strong>User mood</strong>
+              “I want something comforting, funny, and not too heavy.”
+            </div>
+            <div class="mini-card">
+              <strong>AI understanding</strong>
+              Converts the feeling into searchable movie signals like tone, genre, pacing, and theme.
+            </div>
+            <div class="mini-card">
+              <strong>Recommended film</strong>
+              <div class="stars">★★★★★</div>
+              Suggests a movie with an explanation of why it fits the mood.
+              <div class="bar"><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wrap stats">
+      <div class="stat"><b>Problem</b><span>Too many choices and not enough personal guidance</span></div>
+      <div class="stat"><b>Solution</b><span>Translate emotion and preferences into tailored movie picks</span></div>
+      <div class="stat"><b>Data Source</b><span>TMDB movie information and metadata</span></div>
+      <div class="stat"><b>AI Role</b><span>Interpret messy human input into structured search ideas</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section id="overview" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Project overview</h2>
+          <p>
+            I wanted to build something practical, creative, and relatable. A lot of recommendation tools only ask for genre, but real people often do not think that way. Most people say things like, “I want something exciting,” “I need a feel-good movie,” or “I want something deep but not sad.” That inspired me to create a recommendation system that starts with emotion, not just category.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>What problem was I solving?</h3>
+            <p>
+              People waste time browsing because streaming platforms often give too many options without enough personal context. Even when a platform recommends something, the user may not understand why it was chosen. My goal was to reduce decision fatigue and make movie discovery feel more human.
+            </p>
+            <p class="highlight">
+              In simple terms: I built a tool that listens to what kind of mood the user is in and then helps them find movies that match that feeling.
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>What makes this project different?</h3>
+            <p>
+              This is not just a genre filter. It is a hybrid recommendation idea that combines movie metadata with AI-driven interpretation. That means the system does more than read direct keywords. It tries to understand the user’s intent, emotional tone, and viewing preference before searching for matches.
+            </p>
+            <p>
+              That makes the experience feel more like talking to a smart assistant than clicking random filters.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight">
+      <div class="wrap">
+        <div class="quote">
+          <strong>Plain-language summary:</strong> The user tells the app how they feel or what kind of movie night they want. The app translates that into movie search clues, looks up strong candidates, compares them, and returns recommendations with reasoning.
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Tools and technologies I used</h2>
+          <p>
+            I designed this project so that each part had a clear job. That is important because good software is not just about using tools. It is about knowing why each tool is there.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <h3>TMDB API</h3>
+            <p>
+              I used The Movie Database API to pull movie information such as titles, genres, overviews, ratings, release details, and other metadata that helps compare one movie against another.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>OpenAI</h3>
+            <p>
+              I used an LLM to help interpret free-form user input. This was useful because users may describe the same mood in very different ways. AI helped turn those natural phrases into cleaner search and recommendation signals.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>App logic</h3>
+            <p>
+              I built recommendation logic that sits between the user input and the final result. This layer decides how to rank or narrow movies based on mood, genre preferences, and other filters.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>Frontend interface</h3>
+            <p>
+              The front end gives users a simple way to describe what they want. The focus was making the app feel easy and conversational instead of technical.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>Backend integration</h3>
+            <p>
+              The backend handles requests, communicates with external APIs, cleans up the returned data, and sends a structured result back to the user.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>Recommendation design</h3>
+            <p>
+              The main idea behind the app is recommendation quality. I focused on how to move from raw data to a result that actually feels relevant to a person.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>How the system works from start to finish</h2>
+          <p>
+            Below is the full flow of what happens when someone uses the app. I am explaining it in a simple way first, then I break each part down in more detail.
+          </p>
+        </div>
+
+        <div class="architecture">
+          <h3 style="color:#1a1f33;margin-bottom:6px;">End-to-end application flow</h3>
+          <p style="color:#4a5478; margin-top:0;">
+            The app takes human language, turns it into structured search ideas, fetches movie candidates, evaluates them, and returns the best matches.
+          </p>
+
+          <div class="flow">
+            <div class="flow-card">
+              <h4>1. User input</h4>
+              <p>The user enters a mood, preferred genres, or a short description of the type of movie they want.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-card">
+              <h4>2. AI interpretation</h4>
+              <p>The system turns that messy human wording into clearer recommendation signals.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-card">
+              <h4>3. Movie lookup</h4>
+              <p>The app queries TMDB to retrieve possible movie matches and supporting metadata.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-card">
+              <h4>4. Ranking logic</h4>
+              <p>The candidates are compared and scored using mood fit, genre relevance, and overall quality.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-card">
+              <h4>5. Final recommendation</h4>
+              <p>The user receives recommended movies plus an explanation of why those movies match.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Detailed walkthrough of what I built</h2>
+          <p>
+            This is the part of the case study that explains the project like a real build process, not just a final summary.
+          </p>
+        </div>
+
+        <div class="timeline">
+          <article class="step">
+            <div class="step-num">1</div>
+            <div>
+              <h3>I started with the user experience</h3>
+              <p>
+                Before thinking deeply about code, I thought about the actual user. I asked myself: what would make this useful in real life? I realized most people do not always know the exact movie title they want. They usually know the feeling they want.
+              </p>
+              <p>
+                So I designed the app around inputs like mood, vibe, or genre preference. That made the project more human-centered. Instead of forcing users to think like a database, the app meets them where they are.
+              </p>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-num">2</div>
+            <div>
+              <h3>I defined what information the app needed</h3>
+              <p>
+                To recommend movies well, the system needed rich movie data. That includes things like title, genre, description, release year, popularity, and ratings. I used TMDB because it provides structured movie information that is useful for building recommendation logic.
+              </p>
+              <p>
+                In non-technical terms, TMDB acted like the movie library behind the app. My system could not recommend anything without first having a reliable place to look up films.
+              </p>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-num">3</div>
+            <div>
+              <h3>I added AI to understand natural language</h3>
+              <p>
+                This was one of the most important parts of the project. People might say:
+              </p>
+              <p class="muted">
+                “I want something emotional but not depressing.”<br/>
+                “I need a fun movie for girls’ night.”<br/>
+                “Give me something intense and mind-bending.”
+              </p>
+              <p>
+                Those phrases are meaningful to a person, but they are not perfect database queries. So I used AI to bridge that gap. The model helps interpret what the user likely means and turns it into cleaner categories the rest of the system can work with.
+              </p>
+              <p class="highlight">
+                This is like having a translator between human emotion and machine logic.
+              </p>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-num">4</div>
+            <div>
+              <h3>I created the recommendation flow</h3>
+              <p>
+                Once the input is interpreted, the app needs to find possible movies and decide which ones are strongest. I designed the logic so the system would not simply return random movies from a genre. It tries to match multiple signals at once.
+              </p>
+              <ul class="list-clean">
+                <li>Mood fit: does this movie feel like what the user described?</li>
+                <li>Genre fit: does it align with the genres they enjoy?</li>
+                <li>Quality indicators: is it reasonably well received or relevant?</li>
+                <li>Experience match: is it light, dark, intense, comforting, funny, or reflective?</li>
+              </ul>
+              <p>
+                That ranking layer is what turns the project from a basic search tool into a recommendation system.
+              </p>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-num">5</div>
+            <div>
+              <h3>I focused on explainability</h3>
+              <p>
+                A recommendation feels stronger when the user understands why they got it. So part of the project idea was not only to return titles, but also to explain the match in a human-friendly way.
+              </p>
+              <p>
+                For example, instead of only saying “Watch this movie,” the app can say something closer to: this film fits because it combines emotional depth, suspense, and the reflective tone you asked for.
+              </p>
+              <p>
+                That makes the system feel more trustworthy and personal.
+              </p>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-num">6</div>
+            <div>
+              <h3>I thought about scale like a data engineer</h3>
+              <p>
+                Even though this project is presented as a movie app, I also viewed it as a data workflow. The system pulls data from a source, enriches it using AI, transforms it into decision-ready signals, and then serves a result back to the user.
+              </p>
+              <p>
+                That is part of why this project is meaningful for my portfolio. It shows not just app building, but also data thinking: ingestion, transformation, enrichment, ranking, and delivery.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap two-col">
+        <article class="card light">
+          <h2>What the recommendation logic was really doing</h2>
+          <p>
+            At a high level, the app follows a simple idea:
+          </p>
+          <p>
+            <strong>Take emotional input → convert it into movie traits → search for candidates → rank the best ones → return recommendations.</strong>
+          </p>
+          <p>
+            The user does not see all of that complexity. They just feel like the app “understood” them. That is the goal of good product design: keep the hard work behind the scenes and make the front-end experience feel easy.
+          </p>
+          <p>
+            In a more technical sense, this project combines retrieval and interpretation. Retrieval gets the movie options. Interpretation makes the options more meaningful.
+          </p>
+        </article>
+
+        <article class="card">
+          <h2>Why this project matters</h2>
+          <p>
+            This project demonstrates several skills at once:
+          </p>
+          <div>
+            <span class="tag">API integration</span>
+            <span class="tag">AI-assisted product design</span>
+            <span class="tag">Recommendation thinking</span>
+            <span class="tag">Data transformation</span>
+            <span class="tag">User-centered design</span>
+            <span class="tag">End-to-end workflow</span>
+          </div>
+          <p>
+            It shows that I can take an everyday problem, break it into technical parts, and build a solution that is both useful and engaging.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Challenges I had to think through</h2>
+          <p>
+            Good projects are not just about what worked. They are also about what had to be solved.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Challenge 1: Human moods are messy</h3>
+            <p>
+              People describe the same feeling in different ways. One person may say “comfort movie,” another may say “something warm and easy,” and another may say “I do not want anything heavy.” The challenge was teaching the system to treat those as related ideas instead of completely different searches.
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>Challenge 2: Not every popular movie is the right movie</h3>
+            <p>
+              If I only relied on popularity, the system would recommend famous movies that may not match the user’s mood. I had to think about fit, not just fame.
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>Challenge 3: User input can be vague</h3>
+            <p>
+              Some users may give almost no detail, while others give long descriptions. The system needs to handle both gracefully. That is why AI interpretation was useful.
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>Challenge 4: Recommendations should feel intentional</h3>
+            <p>
+              If an app gives suggestions without context, it can feel random. I wanted the results to feel thoughtful, almost like a person made them, which is why explanation mattered so much.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>What I learned from building it</h2>
+          <p>
+            This project taught me that a strong application is not just code connected to an API. It is about understanding users, designing logic around their behavior, and presenting output in a way that feels useful.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Technical lessons</h3>
+            <ul class="list-clean">
+              <li>How to integrate an external data source into an app workflow</li>
+              <li>How to use AI to enrich or interpret user input</li>
+              <li>How to think about ranking instead of only searching</li>
+              <li>How to connect frontend inputs to backend decision logic</li>
+              <li>How to frame a project as both a product and a data pipeline</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Product lessons</h3>
+            <ul class="list-clean">
+              <li>Users want apps that understand intention, not just keywords</li>
+              <li>Explainable results create trust</li>
+              <li>Simple interfaces often hide complex logic</li>
+              <li>Emotional context can be a powerful design input</li>
+              <li>Good recommendations feel personal, not random</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight">
+      <div class="wrap">
+        <div class="quote">
+          <strong>Big takeaway:</strong> This project reflects how I like to build: start with a real user problem, design a clear workflow, use data and AI where they add value, and turn the final result into something people can actually enjoy using.
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>How to use this on my portfolio site</h2>
+          <p>
+            This page is written as a standalone step by step process on how the application was created. It is meant to be read from top to bottom as a single case study. However, if you want to link to this project from a portfolio site, you could do it in a few ways:
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Project links</h3>
+            <p>
+              <strong>Live Demo:</strong> <a href="https://movieai.streamlit.app/" aria-label="Demo link placeholder">Click Here To View The Project</a>
+            </p>
+            <p>
+              <strong>GitHub:</strong>  <a href="https://github.com/gloriamafor">https://github.com/gloriamafor</a>
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>Future improvements</h3>
+            <ul class="list-clean">
+              <li><strong>Personalization:</strong> Learn from the user’s favorite genres, disliked genres, and repeated mood choices to make recommendations more tailored over time.</li>
+              <li><strong>Watch history:</strong> Keep track of movies the user has already seen so the app does not keep suggesting the same titles again.</li>
+              <li><strong>Feedback loop:</strong> Let users mark a recommendation as “Loved it,” “Not for me,” or “Already watched” so the system gets smarter with each interaction.</li>
+              <li><strong>User profiles:</strong> Allow each user to save their preferences, which would make the recommendation experience feel more personal and consistent.</li>
+              <li><strong>Smarter ranking:</strong> Use past user behavior together with mood input to improve how movies are prioritized.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <p>Created by Gloria Mafor</p>
+  </footer>
+</body>
+</html>

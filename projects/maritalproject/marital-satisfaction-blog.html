@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What Really Predicts Marital Satisfaction? | Gloria Mafor</title>
+  <meta
+    name="description"
+    content="A data science case study on predicting marital satisfaction using Python, exploratory data analysis, and machine learning."
+  />
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --surface: #ffffff;
+      --text: #1f1f1f;
+      --muted: #666666;
+      --accent: #7a4b2f;
+      --accent-soft: #f2e3d7;
+      --border: #e8ddd3;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      --max-width: 900px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #fffaf6 0%, #f4e7dc 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 24px 56px;
+    }
+
+    .hero-inner,
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 3.7rem);
+      line-height: 1.15;
+      margin: 0 0 18px;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 760px;
+      margin: 0 0 28px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #633b24;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--accent);
+    }
+
+    .btn-secondary:hover {
+      background: #fff8f3;
+      text-decoration: none;
+    }
+
+    main {
+      padding: 40px 24px 80px;
+    }
+
+    article {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 40px 28px;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    h2 {
+      font-size: 1.65rem;
+      margin: 0 0 14px;
+      line-height: 1.3;
+    }
+
+    p {
+      margin: 0 0 16px;
+      font-size: 1.02rem;
+    }
+
+    ul {
+      margin: 12px 0 0 20px;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: #fffdfb;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .highlight {
+      background: #fff7ef;
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 18px;
+      margin: 20px 0;
+      font-size: 1.05rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.8rem;
+      color: var(--accent);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .image-container,
+    .img-container {
+      margin-top: 22px;
+      text-align: center;
+    }
+
+    .image-container img,
+    .img-container img {
+      width: 100%;
+      max-width: 780px;
+      height: auto;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      background: #fff;
+    }
+
+    .caption {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .note {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .footer-box {
+      margin-top: 34px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    code {
+      background: #f7efe8;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.95em;
+    }
+
+    @media (max-width: 640px) {
+      article {
+        padding: 28px 20px;
+      }
+
+      .hero {
+        padding-top: 52px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">Data Science Project Breakdown</span>
+      <h1>What Really Predicts Marital Satisfaction?</h1>
+      <p class="subtitle">
+        For this project, I used Python, exploratory data analysis, and machine learning to study what actually drives marital satisfaction across more than 7,000 married individuals from 45 countries.
+      </p>
+      <div class="meta">
+        <span>By Gloria Mafor</span>
+        <span>•</span>
+        <span>Python • Pandas • Scikit-learn • Matplotlib • Seaborn</span>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#read">Read the case study</a>
+        <a
+          class="btn btn-secondary"
+          href="https://github.com/gloriamafor/marital-satisfaction-project"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View the Jupyter Notebook
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <article id="read">
+        <section class="section">
+          <h2>Project Overview</h2>
+          <p>
+            I started this project with one main question in mind:
+            <strong>what actually makes a marriage satisfying?</strong>
+          </p>
+          <p>
+            People often make assumptions about marriage. Some people think age matters the most. Others think having children changes everything. Some believe religion or culture is the main driver. I wanted to move past assumptions and use data to see what the strongest patterns actually were.
+          </p>
+          <p>
+            To do that, I worked with a dataset containing responses from <strong>7,178 married individuals across 45 countries</strong>. I cleaned the data, explored it visually, created new features, and trained machine learning models to predict marital satisfaction.
+          </p>
+          <p>
+            What made this project especially meaningful to me is that it sits at the intersection of something very human and something very technical. On one side, it is about emotions, connection, and relationships. On the other side, it is about data cleaning, pattern finding, modeling, and interpretation.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>The Dataset</h2>
+          <p>
+            The dataset combined several different types of information, which made it possible to study marriage from more than one angle.
+          </p>
+
+          <div class="card-grid">
+            <div class="card">
+              <h3>Demographics</h3>
+              <p>Age, sex, education, number of children, years married, and other background variables.</p>
+            </div>
+            <div class="card">
+              <h3>MRQ</h3>
+              <p>Questions measuring relationship quality, including love, pride, attraction, romance, and enjoyment.</p>
+            </div>
+            <div class="card">
+              <h3>KMSS</h3>
+              <p>A 1–7 marital satisfaction scale used as the main target for the project.</p>
+            </div>
+            <div class="card">
+              <h3>GLOBE</h3>
+              <p>Cultural orientation questions measuring family and social expectations.</p>
+            </div>
+          </div>
+
+          <p>
+            In simpler terms, this means the dataset did not just tell me <em>who</em> people were. It also gave clues about
+            <em>how they felt in their relationship</em> and <em>what kind of cultural expectations surrounded that relationship</em>.
+            That is what made it powerful. It allowed me to compare background factors with emotional and cultural factors instead of looking at only one side.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>How I Cleaned and Prepared the Data</h2>
+          <p>
+            Before I could analyze anything, I had to make the raw data usable. Like many real-world datasets, it was not perfectly ready to go.
+          </p>
+          <ul>
+            <li>Removed extra header rows that were not actual participant data</li>
+            <li>Renamed columns into clearer labels so they were easier to work with</li>
+            <li>Converted survey answers into numbers so the models could understand them</li>
+            <li>Used <strong>median imputation</strong> to fill in missing numeric values</li>
+            <li>Created a binary target variable for satisfaction</li>
+          </ul>
+          <p>
+            I also created two summary features:
+            <strong>mrq_mean</strong>, which represents overall relationship quality,
+            and <strong>globe_mean</strong>, which represents overall cultural orientation.
+          </p>
+          <p>
+            This step mattered because machine learning models cannot understand messy survey responses the way people do. They need structured numbers. So part of the project was translating human responses into a clean format while still preserving their meaning.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>Exploratory Data Analysis</h2>
+          <p>
+            Before I built any models, I first wanted to understand what the data looked like. This stage is called exploratory data analysis, or EDA. It is basically the process of looking around the dataset to see what stands out before trying to make predictions.
+          </p>
+
+          <div class="stats">
+            <div class="stat">
+              <strong>81.4%</strong>
+              <span>Satisfied participants</span>
+            </div>
+            <div class="stat">
+              <strong>18.6%</strong>
+              <span>Not satisfied participants</span>
+            </div>
+            <div class="stat">
+              <strong>29</strong>
+              <span>Final predictor variables</span>
+            </div>
+          </div>
+
+          <p>
+            One of the first things I noticed was that the dataset was imbalanced. In simple terms, that means there were many more people who reported being satisfied than people who reported being dissatisfied. That matters because if a model sees mostly satisfied people, it can become easier for it to predict satisfaction by default. So later on, I had to pay attention to more than just accuracy.
+          </p>
+
+          <p>
+            The first graph below is a histogram of marital satisfaction scores. The bottom axis shows the satisfaction score, and the left axis shows how many people fall into each score range.
+          </p>
+
+          <p>
+            The bars are much taller on the right side of the graph, especially around scores of 6 and 7. That tells me that most participants in the dataset reported being fairly satisfied or very satisfied in their marriage. There are still people with lower scores, but there are much fewer of them.
+          </p>
+
+          <p>
+            This graph gives important context for the whole project. It shows that the data leans heavily toward happy marriages, which explains why I needed to be careful when evaluating the models later.
+          </p>
+
+          <div class="image-container">
+            <img src="kmss-bar-chart.png" alt="Distribution of marital satisfaction scores" />
+            <p class="caption">
+              Distribution of marital satisfaction scores based on the KMSS mean. Most scores cluster between 5 and 7,
+              showing that the majority of participants reported being satisfied in their marriage.
+            </p>
+          </div>
+
+          <p>
+            I also used a correlation heatmap to see how the main numeric variables relate to one another. A correlation is just a way of measuring whether two things tend to move together.
+          </p>
+
+          <p>
+            For example, if one variable goes up and another usually goes up too, that would be a positive relationship. If one goes up while the other tends to go down, that would be a negative relationship. And if there is little pattern at all, the relationship is weak.
+          </p>
+
+          <p>
+            In the heatmap below, darker warm colors show stronger positive relationships, cooler colors show more negative relationships, and lighter values mean weak relationships.
+          </p>
+
+          <p>
+            Some results made complete sense. For example, <strong>age</strong> and <strong>marriage_years</strong> have a strong positive relationship. That is expected, because older participants are more likely to have been married longer. In the same way, <strong>num_children</strong> and <strong>num_brought_up_children</strong> are also strongly related.
+          </p>
+
+          <p>
+            But the most important thing this heatmap showed me was what it said about <code>kmss_mean</code>, which is the marital satisfaction score. Its relationships with most demographic variables were weak. Age, years married, number of children, and education all had only small connections with marital satisfaction.
+          </p>
+
+          <p>
+            In very simple language, this means that just knowing someone’s age, how many kids they have, or how long they have been married does not tell you much about whether they are happy in their marriage. That was a major clue that the stronger answers were probably going to come from the relationship-quality variables instead.
+          </p>
+
+          <div class="img-container">
+            <img src="heatmap.png" alt="Correlation heatmap" />
+            <p class="caption">
+              Correlation heatmap of selected numeric variables. The key message here is that most demographic variables
+              had weak relationships with marital satisfaction, which hinted that emotional relationship factors would matter more.
+            </p>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Models I Used</h2>
+          <p>
+            Once the data was cleaned and explored, I trained multiple machine learning models to predict marital satisfaction.
+            I did not want to depend on only one method, because different models detect patterns in different ways.
+          </p>
+          <ul>
+            <li><strong>Random Forest</strong> for capturing more complex patterns</li>
+            <li><strong>Support Vector Machine (SVM)</strong> for class separation</li>
+            <li><strong>K-Nearest Neighbors (KNN)</strong> for similarity-based prediction</li>
+            <li><strong>Decision Tree</strong> for interpretability</li>
+            <li><strong>Linear Regression</strong> for predicting the continuous satisfaction score</li>
+          </ul>
+          <p>
+            I evaluated the classification models using accuracy, precision, recall, F1-score, and ROC-AUC.
+            For regression, I used MAE, RMSE, and R<sup>2</sup>.
+          </p>
+          <p>
+            You do not need to be technical to understand the idea here: I basically tested several different “prediction strategies” and then compared which one gave the best results.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>Results</h2>
+          <p>
+            The best-performing model was <strong>Random Forest</strong>. It achieved an accuracy of <strong>88.5%</strong>,
+            an F1-score of <strong>0.932</strong>, and an AUC of <strong>0.883</strong>. SVM performed almost just as well,
+            while KNN and Decision Tree were slightly weaker.
+          </p>
+
+          <div class="card-grid">
+            <div class="card">
+              <h3>Random Forest</h3>
+              <p>Accuracy: 0.885<br />F1-score: 0.932<br />AUC: 0.883</p>
+            </div>
+            <div class="card">
+              <h3>SVM</h3>
+              <p>Accuracy: 0.883<br />F1-score: 0.931<br />AUC: 0.846</p>
+            </div>
+            <div class="card">
+              <h3>KNN</h3>
+              <p>Accuracy: 0.872<br />F1-score: 0.925<br />AUC: 0.808</p>
+            </div>
+            <div class="card">
+              <h3>Decision Tree</h3>
+              <p>Accuracy: 0.824<br />F1-score: 0.892<br />AUC: 0.714</p>
+            </div>
+          </div>
+
+          <p>
+            What this tells me is that the dataset contained meaningful patterns that the models could actually learn from. The models were not just guessing randomly. Random Forest worked especially well because it can handle different kinds of variables and more complex relationships between them.
+          </p>
+
+          <p>
+            For the regression model, Linear Regression explained about <strong>48.4%</strong> of the variation in marital satisfaction,
+            with predictions landing within about one point of the real score on average.
+          </p>
+
+          <p>
+            That is not perfect, but that also makes sense. Marital satisfaction is a complicated human experience, and no survey can capture every single thing that shapes it. Even so, the model still explained a meaningful amount of what was going on.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>What Actually Predicted Marital Satisfaction?</h2>
+          <p>
+            After I found the best-performing model, I wanted to understand <em>why</em> it worked well. That led me to the most important chart in the whole project: the Random Forest feature importance graph.
+          </p>
+
+          <p>
+            A “feature” is just a variable in the dataset. So feature importance tells me which variables the model found most useful when making predictions. The taller the bar, the more the model relied on that variable.
+          </p>
+
+          <p>
+            The tallest bar by far is <code>mrq_mean</code>. That is the overall relationship-quality score. It combines multiple relationship questions into one average score, so it reflects how strong the emotional and relational side of the marriage is overall.
+          </p>
+
+          <p>
+            Right away, that tells me something powerful:
+            <strong>relationship quality was the strongest predictor of marital satisfaction</strong>.
+          </p>
+
+          <p>
+            Several other MRQ variables also appear near the top of the chart. These are questions related to love, pride, attraction, enjoyment, and romance. That matters because it shows the result is not coming from one random question. It is a consistent pattern across multiple emotional aspects of the relationship.
+          </p>
+
+          <div class="highlight">
+            Biggest takeaway: <strong>how the couple feels about each other matters much more than demographic background.</strong>
+          </div>
+
+          <p>
+            Age and years married show up in the middle of the chart, which means they had some influence, but much less than the relationship-quality variables. Cultural values also had some effect, but again, not nearly as much as emotional connection.
+          </p>
+
+          <p>
+            Religion and religiosity appear even lower. So while they had some role, they were not nearly as important as the direct emotional experience inside the relationship.
+          </p>
+
+          <p>
+            In everyday language, this graph answers the project’s biggest question very clearly. If you want to understand whether a marriage is satisfying, things like love, pride, romance, attraction, and enjoyment are much more informative than things like age, education, or number of children.
+          </p>
+
+          <div class="image-container">
+            <img src="RF.png" alt="Random Forest feature importance chart" />
+            <p class="caption">
+              Random Forest feature importance chart. Relationship-quality variables, especially <code>mrq_mean</code>,
+              were the strongest predictors of marital satisfaction, far above demographic background variables.
+            </p>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Religion and Satisfaction</h2>
+          <p>
+            Religion was not one of the strongest predictors in the model, but I still wanted to look at it more closely.
+            Sometimes a variable can have low overall importance in prediction while still showing noticeable differences when you compare groups directly.
+          </p>
+          <ul>
+            <li><strong>Highest average satisfaction:</strong> Evangelic, Hinduism, Protestant</li>
+            <li><strong>Lowest average satisfaction:</strong> Jewish, Buddhist</li>
+          </ul>
+          <p>
+            So I would describe religion as having a <strong>small overall influence</strong> but some <strong>visible group-level differences</strong>.
+            In other words, religion did not drive the model strongly the way relationship quality did, but it was not completely flat either.
+          </p>
+          <p>
+            This is an important distinction, because it shows that not every useful insight has to come from the exact same kind of analysis.
+            Machine learning told me religion was not a major driver overall, while the group comparison showed that some average differences were still there.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>Final Insight</h2>
+          <p>
+            The clearest lesson from this project is that <strong>emotional connection is the biggest driver of marital satisfaction</strong>.
+            Love, pride, romance, attraction, and enjoyment consistently mattered more than age, education, number of children, or religion.
+          </p>
+          <p>
+            In other words, it is not mainly about who the couple is on paper. It is more about
+            <strong>how they experience the relationship itself</strong>.
+          </p>
+          <p>
+            That was the most meaningful part of the project for me. The data supported something that feels very human and very real:
+            strong marriages are shaped much more by emotional quality than by surface-level background characteristics.
+          </p>
+        </section>
+
+        <section class="section footer-box">
+          <h2>View the Full Notebook</h2>
+          <p>
+            I documented the full workflow in Jupyter Notebook, including the data cleaning, exploratory analysis, feature engineering,
+            model training, evaluation, and interpretation.
+          </p>
+          <p>
+            <a
+              class="btn btn-primary"
+              href="https://github.com/gloriamafor/marital-satisfaction-project"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open the Jupyter Notebook
+            </a>
+          </p>
+          <p class="note">
+            Dataset used in this analysis:
+            <a
+              href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6923244/#_ad93_"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://pmc.ncbi.nlm.nih.gov/articles/PMC6923244/#_ad93_
+            </a>
+          </p>
+        </section>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

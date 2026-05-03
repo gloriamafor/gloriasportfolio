@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How I Built My Food Recommendation Generator | Gloria Mafor</title>
+  <meta name="description" content="A beginner-friendly portfolio case study explaining how I built a food recommendation generator using Flask, JavaScript, SerpApi, and BeautifulSoup." />
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --surface: #ffffff;
+      --surface-soft: #f6efe6;
+      --text: #1f1f1f;
+      --muted: #6a6a6a;
+      --border: #eadfce;
+      --accent: #c96a3d;
+      --accent-2: #2e7d66;
+      --accent-3: #efb24d;
+      --shadow: 0 18px 40px rgba(38, 30, 23, 0.08);
+      --radius: 22px;
+      --max: 1140px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.75;
+      background:
+        radial-gradient(circle at top left, rgba(239,178,77,0.15), transparent 30%),
+        radial-gradient(circle at top right, rgba(46,125,102,0.10), transparent 28%),
+        linear-gradient(180deg, #fdfaf6 0%, #f7f1e8 100%);
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+
+    .page {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 18px 72px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .hero-card, .panel {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-card { padding: 34px; }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 14px;
+      font-size: 0.76rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent-2);
+    }
+
+    h1, h2, h3 {
+      font-family: "Georgia", "Times New Roman", serif;
+      line-height: 1.15;
+      margin: 0 0 14px;
+      color: #231a14;
+    }
+
+    h1 { font-size: clamp(2.2rem, 4vw, 3.8rem); }
+    h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
+    h3 { font-size: 1.2rem; }
+
+    p { margin: 0 0 14px; }
+
+    .lead {
+      font-size: 1.08rem;
+      color: #4d433d;
+      max-width: 62ch;
+      margin-bottom: 20px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(46,125,102,0.10);
+      color: var(--accent-2);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .hero-visual {
+      min-height: 320px;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 30% 30%, #fff6e8, transparent 30%),
+        linear-gradient(145deg, #f7d2b9, #f0e5d8);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .plate {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff, #f8e7d2 60%, #e8bf97 100%);
+      box-shadow: inset 0 0 0 10px rgba(255,255,255,0.45), 0 18px 40px rgba(70,40,20,0.15);
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .plate::before, .plate::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .plate::before {
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(201,106,61,0.86), rgba(239,178,77,0.78));
+    }
+
+    .plate::after {
+      width: 46px;
+      height: 46px;
+      background: rgba(46,125,102,0.9);
+      transform: translate(46px, -42px);
+      box-shadow:
+        -78px 72px 0 8px rgba(46,125,102,0.75),
+        42px 66px 0 2px rgba(201,106,61,0.7),
+        -52px -60px 0 4px rgba(239,178,77,0.9);
+    }
+
+    .quick-facts,
+    .grid-2,
+    .grid-3,
+    .compare-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .quick-facts { grid-template-columns: repeat(4, 1fr); margin: 26px 0 36px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .fact, .card, .compare-box {
+      padding: 22px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .fact .label {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .fact .value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #2a211c;
+    }
+
+    .section { margin-top: 26px; }
+    .panel { padding: 28px; margin-bottom: 22px; }
+
+    .soft-title {
+      color: var(--accent-2);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      margin-bottom: 8px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #fff8f2;
+      padding: 16px 18px;
+      border-radius: 14px;
+      color: #433731;
+      margin-top: 16px;
+    }
+
+    .simple-note {
+      margin-top: 14px;
+      padding: 15px 16px;
+      border-radius: 14px;
+      background: rgba(46,125,102,0.08);
+      color: #24483e;
+      border: 1px solid rgba(46,125,102,0.14);
+    }
+
+    .steps {
+      display: grid;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 18px;
+    }
+
+    .step-num {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #e49767);
+      box-shadow: 0 10px 18px rgba(201,106,61,0.2);
+    }
+
+    ul, ol {
+      padding-left: 20px;
+      margin-top: 10px;
+    }
+
+    li + li { margin-top: 8px; }
+
+    .code-chip {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f3eee7;
+      border: 1px solid var(--border);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.88rem;
+    }
+
+    .architecture {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .arch-row {
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr 70px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .arch-box {
+      padding: 18px;
+      border-radius: 18px;
+      text-align: center;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-weight: 700;
+    }
+
+    .arrow {
+      text-align: center;
+      font-size: 1.5rem;
+      color: var(--accent-2);
+      font-weight: 900;
+    }
+
+    .glossary {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .glossary-item {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .glossary-item strong {
+      display: inline-block;
+      margin-bottom: 6px;
+      color: #2a211c;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      margin-top: 28px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .quick-facts,
+      .compare-grid,
+      .arch-row {
+        grid-template-columns: 1fr;
+      }
+
+      .arch-row { gap: 10px; }
+      .arrow { transform: rotate(90deg); }
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 18px 14px 56px; }
+      .hero-card, .panel { padding: 22px; }
+      .step { grid-template-columns: 1fr; }
+      .step-num { width: 50px; height: 50px; border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-card">
+        <span class="eyebrow">Portfolio Case Study</span>
+        <h1>How I Built My Food Recommendation Generator</h1>
+        <p class="lead">
+          This project is a web app that helps people find recipe ideas based on what they feel like eating. Instead of making the user guess an exact dish name,
+          the app starts with simple preferences like <strong>cravings</strong>, <strong>diet</strong>, <strong>meal type</strong>, <strong>country</strong>, or <strong>dinner</strong>.
+          From there, it searches for recipes, gathers the useful details, and presents them in a clean and easy-to-read format.
+        </p>
+        <p class="lead" style="font-size: 1rem; margin-top: -6px;">
+          In plain language, I built a tool that turns a vague thought like “I want something spicy for dinner” into actual meal ideas with ingredients,
+          steps, and links to the full recipe.
+        </p>
+        <div class="tag-row">
+          <span class="tag">Python</span>
+          <span class="tag">Flask</span>
+          <span class="tag">JavaScript</span>
+          <span class="tag">SerpApi</span>
+          <span class="tag">BeautifulSoup</span>
+          <span class="tag">HTML/CSS</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="plate"></div>
+      </div>
+    </section>
+
+    <section class="quick-facts">
+      <div class="fact">
+        <div class="label">Project Type</div>
+        <div class="value">Recipe discovery web app</div>
+      </div>
+      <div class="fact">
+        <div class="label">Main Goal</div>
+        <div class="value">Help people go from cravings to real recipe ideas</div>
+      </div>
+      <div class="fact">
+        <div class="label">What Happens Behind the Scenes</div>
+        <div class="value">Search, collect, clean, rank, and display recipe results</div>
+      </div>
+      <div class="fact">
+        <div class="label">Why It Matters</div>
+        <div class="value">Makes food discovery easier and more personalized</div>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>Project Overview</h2>
+      <p>
+        People usually do not begin a food search by typing the exact name of a dish. Most of the time, they start with a feeling or preference.
+        They may say, “I want something salty,” “I want food from Ghana,” or “I need a vegetarian breakfast.” That is the real-life behavior I designed this project around.
+      </p>
+      <p>
+        The goal of this app was to make that process easier. I wanted the user to be able to describe what they want in a natural way,
+        and then let the application do the work of finding possible recipes, pulling out the important parts, and showing the best options first.
+      </p>
+      <p>
+        So rather than acting like a simple search bar, this project works more like a helper. It takes broad preferences,
+        translates them into smarter searches, and then narrows down the results into something useful.
+      </p>
+      <div class="callout">
+        <strong>The simple idea:</strong> the user gives the app a few clues about what they want to eat, and the app turns those clues into better recipe suggestions.
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>What Problem Was I Trying to Solve?</h2>
+      <div class="compare-grid">
+        <div class="compare-box">
+          <div class="soft-title">What usually happens</div>
+          <p>
+            On many recipe websites, the user needs to already know what they are looking for. That means the search works best if someone types a very specific dish name,
+            such as “jollof rice” or “banana bread.”
+          </p>
+          <p>
+            But that is not always how people think. Many people know the <em>kind</em> of food they want, but not the exact name of the meal.
+          </p>
+        </div>
+        <div class="compare-box">
+          <div class="soft-title">What I wanted to improve</div>
+          <p>
+            I wanted to build an app that understands broader food intentions. A person should be able to say they want something spicy,
+            a certain cuisine, a certain meal type, or a certain diet, and still get good results.
+          </p>
+          <p>
+            That is what makes the project more useful for everyday people. It starts from how people actually make food choices.
+          </p>
+        </div>
+      </div>
+      <div class="simple-note">
+        <strong>In non-technical terms:</strong> I was solving the gap between “I know what I feel like eating” and “I know the exact recipe name to search for.”
+      </div>
+    </section>
+
+    <section class="grid-2 section">
+      <div class="panel">
+        <h2>The User Side of the Experience</h2>
+        <p>
+          On the front of the app, the user sees a simple form with dropdown options. They can choose what they are craving,
+          the cuisine or country they want to explore, their diet, and the type of meal.
+        </p>
+        <ul>
+          <li><strong>Craving:</strong> sweet, salty, spicy, and so on</li>
+          <li><strong>Cuisine or country:</strong> such as Nigerian, Indian, Mexican, Cameroonian, and more</li>
+          <li><strong>Diet:</strong> vegan, vegetarian, gluten-free, and similar choices</li>
+          <li><strong>Meal type:</strong> breakfast, lunch, dinner, snack, dessert, and more</li>
+        </ul>
+        <p>
+          After choosing those options, the user clicks a button and receives a list of recipe cards with images, ingredients, directions, and source links.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>The Behind-the-Scenes Side</h2>
+        <p>
+          What the user sees is only the surface. In the background, the app is doing a lot more work.
+          It takes the user's choices, builds a better search phrase, looks for recipe pages, reads the useful parts of those pages,
+          compares them to the user’s preferences, and returns the strongest matches.
+        </p>
+        <p>
+          That is what makes this project more than just a pretty interface. It has a real decision-making process behind it.
+        </p>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>Tech Stack Explained in Plain English</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>HTML, CSS, and JavaScript</h3>
+          <p>
+            These handle what the user sees and clicks. HTML gives the page structure, CSS gives it styling,
+            and JavaScript makes it interactive so the form, buttons, and recipe results update without feeling static.
+          </p>
+          <div class="simple-note"><strong>Simple way to think about it:</strong> this is the part that makes the app look good and respond to the user.</div>
+        </div>
+        <div class="card">
+          <h3>Python and Flask</h3>
+          <p>
+            Flask is the part that receives the user’s request and does the main processing work.
+            It acts like the brain of the app. When someone clicks “Get Recommendation,” Flask is what receives the request,
+            starts the search process, and sends the final recipe data back.
+          </p>
+          <div class="simple-note"><strong>Simple way to think about it:</strong> Flask is the worker behind the curtain making the app actually function.</div>
+        </div>
+        <div class="card">
+          <h3>SerpApi and BeautifulSoup</h3>
+          <p>
+            SerpApi helps the app find recipe pages through search results. BeautifulSoup helps the app read the content on those pages.
+            Once the app finds possible recipes, it needs a way to pull out the useful details like the title, image, ingredients, and cooking steps.
+          </p>
+          <div class="simple-note"><strong>Simple way to think about it:</strong> one tool helps the app find recipes, and the other helps it read them.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>A Simple Walkthrough of What Happens When Someone Uses the App</h2>
+      <p>
+        This is the easiest way to understand the project: follow one user action from start to finish.
+      </p>
+      <div class="architecture">
+        <div class="arch-row">
+          <div class="arch-box">The user chooses a craving, cuisine, diet, and meal type</div>
+          <div class="arrow">→</div>
+          <div class="arch-box">The page sends those choices to the backend</div>
+          <div class="arrow">→</div>
+          <div class="arch-box">The backend turns those choices into a smarter search</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box">The app finds recipe pages online</div>
+          <div class="arrow">→</div>
+          <div class="arch-box">The app reads the recipe details and cleans the data</div>
+          <div class="arrow">→</div>
+          <div class="arch-box">The best matching recipes are shown back to the user</div>
+        </div>
+      </div>
+      <div class="callout">
+        The important thing here is that the app is not just showing the first thing it finds. It is doing a series of steps to find results that better match what the person actually asked for.
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>How I Built It Step by Step</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <h3>I started with the real user question</h3>
+            <p>
+              Before writing code, I thought about what a normal person would actually want from a food app.
+              Most people do not open a recipe site saying, “I want dish X.” They often say, “I want something sweet,” or “I want dinner from a certain country.”
+              That idea shaped the entire project.
+            </p>
+            <p>
+              Because of that, I decided the app should begin with broad, human-friendly options instead of forcing exact recipe names.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>I designed the form people would interact with</h3>
+            <p>
+              I built a form with dropdown menus for craving, cuisine or country, diet, and meal type.
+              I chose dropdowns because they make the experience simple and reduce typing mistakes.
+            </p>
+            <p>
+              This part matters because the quality of the output depends on the quality of the inputs.
+              If the form is confusing, the whole experience feels harder. So I kept the input side clean and guided.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>I added extra interface features to make it feel like a real product</h3>
+            <p>
+              I included a <em>Get Recommendation</em> button, a <em>Surprise Me</em> button, and a <em>Stop</em> button.
+              The <em>Surprise Me</em> feature makes the app more fun and exploratory, while the <em>Stop</em> button gives the user more control.
+            </p>
+            <p>
+              I also added pagination so the results would not all pile up in one long overwhelming page.
+              This helped the app feel more polished and easier to use.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <h3>I connected the page to the backend</h3>
+            <p>
+              Once the user picks their options, JavaScript gathers those choices and sends them to Flask.
+              This is the handoff point between the part the user sees and the part that does the deeper work.
+            </p>
+            <p>
+              You can think of this like placing an order at a restaurant: the customer gives the order to the server,
+              and then the kitchen takes over. In this project, JavaScript passes the request, and Flask acts like the kitchen.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div>
+            <h3>I built smarter search phrases from the user’s choices</h3>
+            <p>
+              One of the most important parts of the project was not just taking the user's words literally.
+              I created logic that combines the selected craving, cuisine, diet, and meal type into a more useful search phrase.
+            </p>
+            <p>
+              For example, if a user chooses India, the app may search using “Indian” because that wording is often more common on recipe websites.
+              This improved the quality of the results.
+            </p>
+            <div class="simple-note"><strong>Why this matters:</strong> a better search phrase usually leads to better recipe results.</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">6</div>
+          <div>
+            <h3>I used SerpApi to gather possible recipe sources</h3>
+            <p>
+              After creating the search phrase, the app uses SerpApi to look up related pages.
+              I treated these results as possible candidates, not as final answers.
+            </p>
+            <p>
+              That distinction is important. Just because a page appears in search results does not mean it is a perfect match.
+              Some pages are list pages, some are low quality, and some do not fully match the user's request.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">7</div>
+          <div>
+            <h3>I read the recipe pages and pulled out the useful details</h3>
+            <p>
+              Once the app had possible links, I used BeautifulSoup and structured metadata parsing to read those pages and extract the most useful information.
+              I focused on pieces like the recipe title, image, ingredient list, instructions, and source link.
+            </p>
+            <p>
+              This step is what transforms the project from “a list of links” into “actual recipe recommendations.”
+              Instead of forcing the user to open many pages themselves, the app does some of that work first.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">8</div>
+          <div>
+            <h3>I cleaned and organized messy web data</h3>
+            <p>
+              Web pages are not all written the same way. One recipe site might structure ingredients neatly, while another may scatter them differently.
+              That means the raw data can be messy.
+            </p>
+            <p>
+              I added cleaning and formatting logic so the information would look more consistent before it was shown to the user.
+              This included organizing ingredients and instruction steps into a readable format.
+            </p>
+            <div class="simple-note"><strong>Simple way to think about it:</strong> I took messy information from the internet and made it presentable.</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">9</div>
+          <div>
+            <h3>I ranked the recipes instead of just showing random results</h3>
+            <p>
+              This is one of the most important parts of the project. I did not want the user to get whatever page happened to appear first.
+              I wanted the app to decide which recipes were the strongest matches.
+            </p>
+            <p>
+              So I built ranking logic that checks how well each recipe matches the user's craving, cuisine, diet, and meal type.
+              Recipes that match more of the user’s preferences are scored higher and shown first.
+            </p>
+            <div class="callout">
+              This is what makes the project feel more intelligent. It does not just find recipes. It tries to find the ones that make the most sense for the user.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">10</div>
+          <div>
+            <h3>I displayed the final results as recipe cards</h3>
+            <p>
+              After the app finishes searching, cleaning, and ranking, it sends the final recipe data back to the frontend.
+              JavaScript then displays each recommendation as a recipe card.
+            </p>
+            <p>
+              Each card gives the user the essentials at a glance: the recipe title, image, cuisine label, ingredients, instructions,
+              and a link to the full source. That way, the user can quickly compare options without feeling overwhelmed.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2 section">
+      <div class="panel">
+        <h2>Frontend Features Explained Simply</h2>
+        <ul>
+          <li><strong>Dropdown filters:</strong> these guide the user and make the app easy to use.</li>
+          <li><strong>Surprise Me:</strong> this adds discovery and makes the app feel playful.</li>
+          <li><strong>Stop button:</strong> this gives the user more control if they want to cancel a request.</li>
+          <li><strong>Saved selections:</strong> the app remembers recent choices so the user does not have to keep reselecting them.</li>
+          <li><strong>Pagination:</strong> this breaks large results into smaller pages so the screen stays cleaner.</li>
+          <li><strong>Loading and empty states:</strong> the app clearly tells the user what is happening instead of leaving them confused.</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>Backend Features Explained Simply</h2>
+        <ul>
+          <li><strong>Smarter search building:</strong> the app turns simple user choices into better web searches.</li>
+          <li><strong>Recipe gathering:</strong> it looks for possible recipe pages instead of relying on one fixed database.</li>
+          <li><strong>Recipe reading:</strong> it pulls out the details people care about most.</li>
+          <li><strong>Data cleaning:</strong> it tidies messy information before showing it.</li>
+          <li><strong>Relevance scoring:</strong> it decides which recipes are the best fit.</li>
+          <li><strong>Clean response format:</strong> it sends back only the useful information the frontend needs.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>Why the Ranking Logic Was So Important</h2>
+      <p>
+        If I had stopped at the search stage, this project would have felt like a basic wrapper around existing search results.
+        That would not be very impressive or very useful. The real value comes from deciding which results deserve to be shown first.
+      </p>
+      <p>
+        For example, if someone asks for a spicy Nigerian dinner, not every recipe page that mentions Nigeria or spice should be treated the same.
+        Some will be more relevant than others. My ranking logic helps sort those differences out.
+      </p>
+      <p>
+        In a non-technical sense, this is the part where the app starts to show judgment. It is trying to understand the user's intention,
+        not just repeat whatever the internet throws back.
+      </p>
+    </section>
+
+    <section class="grid-2 section">
+      <div class="panel">
+        <h2>Challenges I Ran Into</h2>
+        <ul>
+          <li>Not all recipe websites are organized the same way.</li>
+          <li>Some search results lead to collections of recipes instead of one actual recipe page.</li>
+          <li>The internet is noisy, so some pages contain a lot of extra information that is not useful.</li>
+          <li>Country names and food labels are not always written the same way online.</li>
+          <li>Showing too many results at once can make the experience feel cluttered.</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>How I Solved Those Challenges</h2>
+        <ul>
+          <li>I supported more than one extraction method so the app could handle different website structures.</li>
+          <li>I separated the step of finding recipe pages from the step of reading recipe details.</li>
+          <li>I cleaned and standardized the data before sending it to the user interface.</li>
+          <li>I added country and cuisine matching logic to improve relevance.</li>
+          <li>I used pagination and clear UI feedback to keep the experience organized.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>What I Learned from Building This</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Real-world data is messy</h3>
+          <p>
+            Building with live web data taught me that information is rarely handed to you in a neat format.
+            A big part of development is cleaning and organizing data so it becomes useful.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Good results matter as much as working code</h3>
+          <p>
+            The app could be technically functional but still not feel helpful if the recommendations are poor.
+            This taught me that relevance and user satisfaction are part of the engineering work too.
+          </p>
+        </div>
+        <div class="card">
+          <h3>User experience makes a big difference</h3>
+          <p>
+            Features like saved selections, a stop button, loading states, and pagination may seem small,
+            but they make the app feel more polished and thoughtful.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>How I Would Improve It Next</h2>
+      <p>
+        If I continue developing this project, I would want to make it even more personalized and scalable.
+      </p>
+      <ul>
+        <li>Add user accounts so people can save favorite recipes and search preferences.</li>
+        <li>Track which recipes users click or like so the app can learn over time.</li>
+        <li>Cache common searches to make repeated requests faster.</li>
+        <li>Add extra information such as cook time, nutrition, or difficulty level when available.</li>
+        <li>Deploy the frontend and backend separately for a more production-ready architecture.</li>
+      </ul>
+    </section>
+
+    <section class="section panel">
+      <h2>Mini Glossary for Non-Technical Readers</h2>
+      <div class="glossary">
+        <div class="glossary-item">
+          <strong>Frontend</strong>
+          <p>This is the part of the app the user can actually see and interact with on the screen.</p>
+        </div>
+        <div class="glossary-item">
+          <strong>Backend</strong>
+          <p>This is the behind-the-scenes part that processes requests, does the logic, and returns results.</p>
+        </div>
+        <div class="glossary-item">
+          <strong>API</strong>
+          <p>An API is a way for one part of a system to talk to another. In this project, the page sends a request to the backend and receives recipe data back.</p>
+        </div>
+        <div class="glossary-item">
+          <strong>Scraping</strong>
+          <p>Scraping means reading web pages and pulling out useful information from them, such as recipe titles, ingredients, or instructions.</p>
+        </div>
+        <div class="glossary-item">
+          <strong>Ranking Logic</strong>
+          <p>This is the method the app uses to decide which results are the best match and should be shown first.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>Final Reflection</h2>
+      <p>
+        This project helped me practice much more than just building a webpage. I had to think about the user’s real need,
+        design a better search experience, work with outside data, clean messy information, and present the final results clearly.
+      </p>
+      <p>
+        What I like most about this project is that it shows how I approach problem-solving. I do not just want to make something look nice.
+        I want to build tools that take a real everyday problem and make it simpler for the user.
+      </p>
+      <p>
+        In this case, the problem was food discovery. The solution was a recommendation app that starts with human preferences and turns them into useful meal ideas.
+      </p>
+    </section>
+
+    <p class="footer-note">Created by Gloria Mafor</p>
+  </div>
+</body>
+</html>

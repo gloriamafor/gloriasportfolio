@@ -84,6 +84,19 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 					<li><a href="https://github.com/gloriamafor"><i class="icon-github"></i></a></li>
 					<li><a href="https://www.linkedin.com/in/gmafor/"><i class="icon-linkedin2"></i></a></li>
 				</ul>
+
+                <p> Visitors: <span id="visitor-count"> </span></p>
+                <script>
+                    fetch("https://o0livv1nsf.execute-api.us-east-2.amazonaws.com/visitor-count")
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById("visitor-count").textContent = data.views;
+                        })
+                        .catch(error => {
+                            console.error("Error fetching visitor count:", error);
+                            document.getElementById("visitor-count").textContent = "Unavailable";
+                        });
+                </script>
 			</div>
 
 		</aside>
@@ -310,9 +323,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							<p>Technical Skills I Use to Build Real Applications</p>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInLeft">
-							<div class="services color-1">
+					<div class="row skills-grid">
+						<div class="col-md-6 animate-box skill-item" data-animate-effect="fadeInLeft">
+							<div class="services color-1 skill-card">
 								<h3>Programming</h3>
 								<ul>
 									<li>Python</li>
@@ -320,13 +333,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<li>C / C++</li>
 									<li>SQL</li>
 									<li>Javascript</li>
-									<li>Swift</li>
-									<li>Typescript</li>
 								</ul>
 							</div>
 						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInRight">
-							<div class="services color-2">
+						<div class="col-md-6 animate-box skill-item" data-animate-effect="fadeInRight">
+							<div class="services color-2 skill-card">
 								<h3>Data Science &amp; Machine Learning</h3>
 								<ul>
 									<li>Pandas, NumPy</li>
@@ -340,12 +351,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<li>Decision Trees</li>
 									<li>Model Evaluation</li>
 									<li>Cross-Validation</li>
-									<li>Handling Imbalanced Data</li>
 								</ul>
 							</div>
 						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInLeft">
-							<div class="services color-3">
+						<div class="col-md-6 animate-box skill-item" data-animate-effect="fadeInLeft">
+							<div class="services color-3 skill-card">
 								<h3>Database &amp; Data Storage</h3>
 								<ul>
 									<li>SQL</li>
@@ -353,7 +363,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 								</ul>
 							</div>
 						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInRight">
+					<!--	<div class="col-md-6 animate-box" data-animate-effect="fadeInRight">
 							<div class="services color-4">
 								<h3>Data Formats &amp; Parsing</h3>
 								<ul>
@@ -361,9 +371,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<li>XML (DOM, XPATH)</li>
 								</ul>
 							</div>
-						</div>
-						<div class="col-md-12 animate-box" data-animate-effect="fadeInLeft">
-							<div class="services color-5">
+						</div>-->
+						<div class="col-md-6 animate-box skill-item" data-animate-effect="fadeInLeft">
+							<div class="services color-5 skill-card">
 								<h3>Web Development</h3>
 								<ul>
 									<li>HTML/CSS</li>
@@ -375,15 +385,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 								</ul>
 							</div>
 						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInRight">
-							<div class="services color-6">
+						<div class="col-md-6 animate-box skill-item" data-animate-effect="fadeInRight">
+							<div class="services color-6 skill-card">
 								<h3>Cloud, DevOps, &amp; Tools</h3>
 								<ul>
-									<li>Linux</li>
-									<li>Bash</li>
+									<li>AWS</li>
 									<li>Git/Github</li>
 									<li>Docker</li>
-									<li>AWS</li>
+									<li>Bash</li>
 								</ul>
 							</div>
 						</div>
@@ -472,7 +481,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 					               <div class="timeline-label">
 					                  <h2 class="experience-line">
-					                  	The Global Tech Experience
+					                  	The Global Career Accelerator
 					                  	<span class="experience-meta">Cleveland, OH</span>
 					                  </h2>
 					                  <h3 class="experience-line experience-role">
@@ -554,16 +563,16 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 					</div>
 					<div class="row row-bottom-padded-sm animate-box" data-animate-effect="fadeInLeft">
 						<div class="col-md-12">
-							<p class="work-menu"><span><a href="#" class="active">Graphic Design</a></span> <span><a href="#">Web Design</a></span> <span><a href="#">Software</a></span> <span><a href="#">Apps</a></span></p>
+							<p class="work-menu"><span><a href="#" class="active">Applications</a></span></p>
 						</div>
 					</div>
 					<div class="row">
 						<div class="col-md-6 animate-box" data-animate-effect="fadeInLeft">
-							<div class="project" style="background-image: url(images/img-1.jpg);">
+							<div class="project" style="background-image: url(images/food.webp);">
 								<div class="desc">
 									<div class="con">
-										<h3><a href="work.html">Work 01</a></h3>
-										<span>Website</span>
+										<h3><a href="/projects/foodapp/index.html">Food Recommendation Generator</a></h3>
+										<span>Python + Flask | AWS Lambda | AWS API Gateway</span>
 										<p class="icon">
 											<span><a href="#"><i class="icon-share3"></i></a></span>
 											<span><a href="#"><i class="icon-eye"></i> 100</a></span>
@@ -574,11 +583,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							</div>
 						</div>
 						<div class="col-md-6 animate-box" data-animate-effect="fadeInRight">
-							<div class="project" style="background-image: url(images/img-2.jpg);">
+							<div class="project" style="background-image: url(images/whitman.webp);">
 								<div class="desc">
 									<div class="con">
-										<h3><a href="work.html">Work 02</a></h3>
-										<span>Animation</span>
+										<h3><a href="https://whitmanbehavioralwellness.com">Whitman Behavioral & Wellness Website</a></h3>
+										<span>Wordpress(PHP) | AWS Lightsail</span>
 										<p class="icon">
 											<span><a href="#"><i class="icon-share3"></i></a></span>
 											<span><a href="#"><i class="icon-eye"></i> 100</a></span>
@@ -589,56 +598,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							</div>
 						</div>
 						<div class="col-md-6 animate-box" data-animate-effect="fadeInTop">
-							<div class="project" style="background-image: url(images/img-3.jpg);">
+							<div class="project" style="background-image: url(images/movie.png);">
 								<div class="desc">
 									<div class="con">
-										<h3><a href="work.html">Work 03</a></h3>
-										<span>Illustration</span>
-										<p class="icon">
-											<span><a href="#"><i class="icon-share3"></i></a></span>
-											<span><a href="#"><i class="icon-eye"></i> 100</a></span>
-											<span><a href="#"><i class="icon-heart"></i> 49</a></span>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInBottom">
-							<div class="project" style="background-image: url(images/img-4.jpg);">
-								<div class="desc">
-									<div class="con">
-										<h3><a href="work.html">Work 04</a></h3>
-										<span>Application</span>
-										<p class="icon">
-											<span><a href="#"><i class="icon-share3"></i></a></span>
-											<span><a href="#"><i class="icon-eye"></i> 100</a></span>
-											<span><a href="#"><i class="icon-heart"></i> 49</a></span>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInLeft">
-							<div class="project" style="background-image: url(images/img-5.jpg);">
-								<div class="desc">
-									<div class="con">
-										<h3><a href="work.html">Work 05</a></h3>
-										<span>Graphic, Logo</span>
-										<p class="icon">
-											<span><a href="#"><i class="icon-share3"></i></a></span>
-											<span><a href="#"><i class="icon-eye"></i> 100</a></span>
-											<span><a href="#"><i class="icon-heart"></i> 49</a></span>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6 animate-box" data-animate-effect="fadeInRight">
-							<div class="project" style="background-image: url(images/img-6.jpg);">
-								<div class="desc">
-									<div class="con">
-										<h3><a href="work.html">Work 06</a></h3>
-										<span>Web Design</span>
+										<h3><a href="https://movieai.streamlit.app/">Movie Recommendation AI System</a></h3>
+										<span>Python + OpenAI, TMDB API, CSS </span>
 										<p class="icon">
 											<span><a href="#"><i class="icon-share3"></i></a></span>
 											<span><a href="#"><i class="icon-eye"></i> 100</a></span>
@@ -649,11 +613,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							</div>
 						</div>
 					</div>
+                    <!--
 					<div class="row">
 						<div class="col-md-12 animate-box">
 							<p><a href="#" class="btn btn-primary btn-lg btn-load-more">Load more <i class="icon-reload"></i></a></p>
 						</div>
-					</div>
+					</div> -->
 				</div>
 			</section>
 
@@ -665,43 +630,54 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							<h2 class="colorlib-heading">Blog</h2>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-md-4 col-sm-6 animate-box" data-animate-effect="fadeInLeft">
-							<div class="blog-entry">
-								<a href="blog.html" class="blog-img"><img src="images/blog-1.jpg" class="img-responsive" alt="HTML5 Bootstrap Template by colorlib.com"></a>
+					<div class="row blog-grid" data-visible-count="1">
+						<div class="col-md-4 col-sm-6 animate-box blog-item" data-animate-effect="fadeInLeft">
+							<div class="blog-entry blog-card">
+								<a href="/projects/maritalproject/marital-satisfaction-blog.html" class="blog-img"><img src="images/data_science.png" class="img-responsive" alt="HTML5 Bootstrap Template by colorlib.com"></a>
 								<div class="desc">
-									<span><small>April 14, 2018 </small> | <small> Web Design </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
-									<h3><a href="blog.html">Renovating National Gallery</a></h3>
-									<p>Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+									<span><small>December, 2025 </small> | <small>Data Science </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
+									<h3><a href="/projects/maritalproject/marital-satisfaction-blog.html">Marital Satisfaction: A Machine Learning Approach</a></h3>
+									<p>Exploring the factors that influence marital satisfaction through a machine learning lens.</p>
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4 col-sm-6 animate-box" data-animate-effect="fadeInRight">
-							<div class="blog-entry">
-								<a href="blog.html" class="blog-img"><img src="images/blog-2.jpg" class="img-responsive" alt="HTML5 Bootstrap Template by colorlib.com"></a>
+						<div class="col-md-4 col-sm-6 animate-box blog-item" data-animate-effect="fadeInRight">
+							<div class="blog-entry blog-card">
+								<a href="/projects/foodapp/food_recommendation_blog.html" class="blog-img"><img src="images/webapplication.png" class="img-responsive" alt="HTML5 Bootstrap Template by colorlib.com"></a>
 								<div class="desc">
-									<span><small>April 14, 2018 </small> | <small> Web Design </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
-									<h3><a href="blog.html">Wordpress for a Beginner</a></h3>
-									<p>Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+									<span><small>September, 2024 </small> | <small> Web App </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
+									<h3><a href="/projects/foodapp/food_recommendation_blog.html">How I Built My Food Recommendation Generator</a></h3>
+									<p>Here, I explained the steps I took to build my food recommendation generator project.</p>
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4 col-sm-6 animate-box" data-animate-effect="fadeInLeft">
-							<div class="blog-entry">
-								<a href="blog.html" class="blog-img"><img src="images/blog-3.jpg" class="img-responsive" alt="HTML5 Bootstrap Template by colorlib.com"></a>
+						<div class="col-md-4 col-sm-6 animate-box blog-item" data-animate-effect="fadeInLeft">
+							<div class="blog-entry blog-card">
+								<a href="/projects/movieai/movie_ai_blog.html" class="blog-img"><img src="images/movie2.jpeg" class="img-responsive" alt="HTML5 Bootstrap Template by colorlib.com"></a>
 								<div class="desc">
-									<span><small>April 14, 2018 </small> | <small> Inspiration </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
-									<h3><a href="blog.html">Make website from scratch</a></h3>
-									<p>Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+									<span><small>November, 2025 </small> | <small> Web App </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
+									<h3><a href="/projects/movieai/movie_ai_blog.html">The Creation Of My Movie Recommendation AI</a></h3>
+									<p>Step-by-step guide on how I was able to build my movie recommendation AI.</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-6 animate-box blog-item" data-animate-effect="fadeInRight">
+							<div class="blog-entry blog-card">
+								<a href="mutems_website.html" class="blog-img"><img src="images/whitman.jpeg" class="img-responsive" alt="Whitman Behavioral Wellness website preview"></a>
+								<div class="desc">
+									<span><small>January, 2026 </small> | <small> Wordpress Website </small> | <small> <i class="icon-bubble3"></i> 4</small></span>
+									<h3><a href="mutems_website.html">Building a Client Website with WordPress, AWS Lightsail, and DNS Configuration</a></h3>
+									<p>How I planned, launched, and configured a client website with WordPress hosting, plugins, and production DNS setup.</p>
 								</div>
 							</div>
 						</div>
 					</div>
+                    <!--
 					<div class="row">
-						<div class="col-md-12 animate-box">
-							<p><a href="#" class="btn btn-primary btn-lg btn-load-more">Load more <i class="icon-reload"></i></a></p>
+						<div class="col-md-12 animate-box blog-item-hidden">
+							<p><button type="button" class="btn btn-primary btn-lg btn-load-more blog-load-more" data-target=".blog-grid">Load more <i class="icon-reload"></i></button></p>
 						</div>
-					</div>
+					</div> -->
 				</div>
 			</section>
 
@@ -714,7 +690,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-md-5">
+						<!--<div class="col-md-5">
 							<div class="colorlib-feature colorlib-feature-sm animate-box" data-animate-effect="fadeInLeft">
 								<div class="colorlib-icon">
 									<i class="icon-globe-outline"></i>
@@ -732,7 +708,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<p>Cleveland, Ohio</p>
 								</div>
 							</div>
-						</div>
+						</div> -->
 						<div class="col-md-7 col-md-push-1">
 							<div class="row">
 								<div class="col-md-10 col-md-offset-1 col-md-pull-1 animate-box" data-animate-effect="fadeInRight">

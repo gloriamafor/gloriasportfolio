@@ -286,6 +286,55 @@
 		})
 	};
 
+	var loadMoreBlogs = function() {
+		var $button = $('.blog-load-more[data-target=".blog-grid"]');
+
+		if (!$button.length) {
+			return;
+		}
+
+		$button.each(function() {
+			var $trigger = $(this);
+			var targetSelector = $trigger.data('target');
+			var $grid = $(targetSelector).first();
+			var hiddenCount = $grid.find('.blog-item-hidden').length;
+
+			if (!$grid.length || !hiddenCount) {
+				$trigger.hide();
+			}
+		});
+
+		$button.on('click', function(event) {
+			event.preventDefault();
+
+			var $trigger = $(this);
+			var targetSelector = $trigger.data('target');
+			var $grid = $(targetSelector).first();
+			var revealCount = parseInt($grid.data('visible-count'), 10) || 1;
+			var $hiddenItems = $grid.find('.blog-item-hidden').slice(0, revealCount);
+
+			$hiddenItems.each(function() {
+				var $item = $(this);
+				var effect = $item.data('animate-effect') || 'fadeInUp';
+				var animationClass = effect === 'fadeIn' ? 'fadeIn' : effect;
+
+				$item
+					.removeClass('blog-item-hidden item-animate')
+					.addClass(animationClass + ' animated')
+					.css({
+						display: 'flex',
+						opacity: 1
+					})
+					.hide()
+					.fadeIn(300);
+			});
+
+			if (!$grid.find('.blog-item-hidden').length) {
+				$trigger.fadeOut(200);
+			}
+		});
+	};
+
 	// Document on load.
 	$(function(){
 		fullHeight();
@@ -304,6 +353,7 @@
 		sliderMain();
 		stickyFunction();
 		owlCrouselFeatureSlide();
+		loadMoreBlogs();
 	});
 
 

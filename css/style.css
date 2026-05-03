@@ -656,6 +656,68 @@ body.offcanvas {
   .colorlib-services .services-row .services {
     width: 100%; }
 
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch; }
+  .skills-grid .skill-item {
+    display: flex;
+    float: none;
+    margin-bottom: 30px; }
+  .skills-grid .skill-card {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0; }
+  @media screen and (max-width: 768px) {
+    .skills-grid {
+      display: block; }
+      .skills-grid .skill-item {
+        display: block;
+        margin-bottom: 0; }
+      .skills-grid .skill-card {
+        margin-bottom: 30px; } }
+
+.blog-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch; }
+  .blog-grid .blog-item {
+    display: flex;
+    float: none; }
+.blog-grid .blog-item-hidden {
+  display: none; }
+.blog-grid .blog-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%; }
+  .blog-grid .blog-card .blog-img {
+    display: block;
+    height: 220px;
+    margin-bottom: 25px; }
+  .blog-grid .blog-card .blog-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; }
+  .blog-grid .blog-card .desc {
+    display: flex;
+    flex: 1;
+    flex-direction: column; }
+  .blog-grid .blog-card .desc h3 {
+    min-height: 3.4em;
+    margin-top: 0; }
+  @media screen and (max-width: 768px) {
+    .blog-grid {
+      display: block; }
+      .blog-grid .blog-item {
+        display: block; }
+      .blog-grid .blog-item-hidden {
+        display: none; }
+      .blog-grid .blog-card .blog-img {
+        height: auto; }
+      .blog-grid .blog-card .desc h3 {
+        min-height: 0; } }
+
 .services {
   margin-bottom: 30px;
   padding: 1.5em;

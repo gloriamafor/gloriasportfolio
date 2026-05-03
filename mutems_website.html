@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a Client Website with WordPress, AWS Lightsail, and DNS Configuration | Gloria Mafor</title>
+  <meta name="description" content="A detailed portfolio case study explaining how I planned, built, configured, and launched a client website using WordPress, AWS Lightsail, DNS configuration, and website plugins." />
+  <style>
+    :root {
+      --bg: #f8f4ef;
+      --surface: #ffffff;
+      --surface-soft: #f2ebe3;
+      --text: #1f1f1f;
+      --muted: #666;
+      --accent: #7a4b2f;
+      --accent-2: #9a6a4f;
+      --line: #e6ddd4;
+      --success: #315f45;
+      --shadow: 0 14px 34px rgba(44, 31, 24, 0.08);
+      --radius: 20px;
+      --max: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #fbf7f2 0%, #f8f4ef 100%);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      width: min(var(--max), calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .45rem .9rem;
+      border-radius: 999px;
+      background: #f4e8dc;
+      color: var(--accent);
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    header {
+      padding: 4.5rem 0 3rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .panel,
+    .step,
+    .note,
+    .impact,
+    .faq,
+    .takeaway,
+    .challenge-card,
+    .plain-card,
+    .stack-card,
+    .placeholder {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 2.25rem;
+    }
+
+    .hero h1 {
+      margin: 1rem 0 1rem;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p.lead {
+      font-size: 1.08rem;
+      color: #343434;
+      max-width: 60ch;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .panel {
+      padding: 1.2rem;
+    }
+
+    .panel h3,
+    .stack-card h3,
+    .impact h3,
+    .faq h3,
+    .plain-card h3,
+    .takeaway h3,
+    .challenge-card h3 {
+      margin: 0 0 .45rem;
+      font-size: 1rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    section {
+      padding: 1.4rem 0 0.8rem;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1rem;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.55rem, 3vw, 2.35rem);
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--muted);
+    }
+
+    .info-grid,
+    .impact-grid,
+    .challenge-grid,
+    .plain-grid,
+    .takeaways {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .stack-card,
+    .impact,
+    .faq,
+    .plain-card,
+    .takeaway,
+    .challenge-card {
+      padding: 1.3rem;
+    }
+
+    .steps {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .step {
+      padding: 1.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step::before {
+      content: attr(data-step);
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 3.4rem;
+      line-height: 1;
+      color: rgba(122, 75, 47, 0.08);
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .step h3 {
+      margin: 0 0 .6rem;
+      font-size: 1.25rem;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      padding: .38rem .7rem;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      color: #5f4331;
+      font-size: .9rem;
+      font-weight: 600;
+    }
+
+    .note {
+      padding: 1.25rem 1.35rem;
+      margin-top: 1rem;
+      border-left: 5px solid var(--accent);
+    }
+
+    .placeholder {
+      padding: 1rem;
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      background:
+        linear-gradient(135deg, rgba(122, 75, 47, 0.05), rgba(122, 75, 47, 0.02)),
+        repeating-linear-gradient(
+          45deg,
+          #fbf7f2,
+          #fbf7f2 12px,
+          #f3ece5 12px,
+          #f3ece5 24px
+        );
+    }
+
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .screenshot-card {
+      margin: 0;
+      padding: .9rem;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .screenshot-card img {
+      display: block;
+      width: 100%;
+      height: 260px;
+      object-fit: contain;
+      background: #fbf7f2;
+      border-radius: 14px;
+    }
+
+    .screenshot-card figcaption {
+      margin-top: .75rem;
+      text-align: center;
+      color: #5f4331;
+      font-size: .95rem;
+      font-weight: 600;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    ul.clean {
+      margin: .4rem 0 0;
+      padding-left: 1.15rem;
+    }
+
+    ul.clean li { margin-bottom: .55rem; }
+
+    .callout {
+      display: inline-block;
+      background: #f8eee5;
+      border: 1px solid #ebd6c6;
+      color: #6e4025;
+      padding: .15rem .45rem;
+      border-radius: .45rem;
+      font-weight: 700;
+      font-size: .95rem;
+    }
+
+    footer {
+      padding: 2.5rem 0 4rem;
+    }
+
+    .footer-card {
+      padding: 1.4rem;
+      background: #2e211a;
+      color: #f6ede7;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .footer-card p { color: #e9d6c8; }
+
+    @media (max-width: 980px) {
+      .hero,
+      .screenshot-grid,
+      .two-col,
+      .stack-grid,
+      .info-grid,
+      .impact-grid,
+      .challenge-grid,
+      .plain-grid,
+      .takeaways {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header { padding-top: 3rem; }
+      .hero,
+      .mini-grid,
+      .screenshot-grid,
+      .two-col,
+      .stack-grid,
+      .info-grid,
+      .impact-grid,
+      .challenge-grid,
+      .plain-grid,
+      .takeaways,
+      .section-head {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+      .hero-card,
+      .panel,
+      .step,
+      .stack-card,
+      .impact,
+      .faq,
+      .plain-card,
+      .takeaway,
+      .challenge-card {
+        padding: 1.2rem;
+      }
+      .hero h1 { font-size: 2.2rem; }
+      .screenshot-card img { height: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container hero">
+      <article class="hero-card">
+        <span class="eyebrow">Portfolio Case Study</span>
+        <h1>How I Planned, Built, and Launched a Client Website Using WordPress and AWS Lightsail</h1>
+        <p class="lead">
+          For this project, I created a full website for a real client and handled the work from setup to launch.
+          That included choosing the platform, configuring hosting, connecting the domain, designing the pages,
+          setting up forms, and troubleshooting the issues that came up along the way. This write-up explains the
+          project in plain language so even someone without a technical background can understand what I built and why it mattered.
+        </p>
+        <div class="tag-row">
+          <span class="tag">WordPress</span>
+          <span class="tag">AWS Lightsail</span>
+          <span class="tag">DNS & Domain Setup</span>
+          <span class="tag">Responsive Design</span>
+          <span class="tag">Forminator Plugin</span>
+          <span class="tag">Client Website Delivery</span>
+        </div>
+      </article>
+
+      <div class="hero-side">
+        <div class="mini-grid">
+          <div class="panel">
+            <h3>Project Type</h3>
+            <p class="muted">Website design, setup, deployment, and launch for a real client.</p>
+          </div>
+          <div class="panel">
+            <h3>My Role</h3>
+            <p class="muted">Builder, designer, troubleshooter, and deployment owner.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Why this project matters</h3>
+          <p class="muted">
+            This project shows that I can take a business need and turn it into a working digital product. It was not just about making something look good. It was about solving real problems: giving the client an online presence, helping visitors find information quickly, and making it easier for people to reach out.
+          </p>
+        </div>
+        <div class="panel">
+          <h3>Simple one-line summary</h3>
+          <p class="muted">
+            I built and launched a professional website by combining a website builder with cloud hosting, domain configuration, and practical problem-solving.
+          </p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Project Overview</h2>
+          </div>
+          <p>
+            Think of this project like opening a new business location online. I had to create the digital "building," make sure people could find it, organize the information inside it, and make sure the contact process actually worked.
+          </p>
+        </div>
+
+        <div class="info-grid">
+          <div class="impact">
+            <h3>The problem</h3>
+            <p class="muted">
+              The client needed a professional website where people could learn about the business, understand the services offered, and easily get in touch.
+            </p>
+          </div>
+          <div class="impact">
+            <h3>The goal</h3>
+            <p class="muted">
+              Build a clean, trustworthy, easy-to-navigate website that feels professional and works well on both phones and computers.
+            </p>
+          </div>
+          <div class="impact">
+            <h3>The result</h3>
+            <p class="muted">
+              A launched website with structured pages, a contact form, custom content sections, cloud hosting, and domain connectivity.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Tools and Technology I Used</h2>
+          </div>
+          <p>
+            I want recruiters and non-technical readers to see not just the names of the tools, but also what each one actually did in the project.
+          </p>
+        </div>
+
+        <div class="stack-grid">
+          <div class="stack-card">
+            <h3>WordPress</h3>
+            <p class="muted">
+              This was the main website platform. It gave me a dashboard where I could create pages, manage content, install plugins, and control the site without having to code every screen from scratch.
+            </p>
+          </div>
+          <div class="stack-card">
+            <h3>AWS Lightsail</h3>
+            <p class="muted">
+              This was the cloud hosting environment. In simple terms, Lightsail is the online computer where the website lives so people can visit it on the internet.
+            </p>
+          </div>
+          <div class="stack-card">
+            <h3>DNS / Domain Configuration</h3>
+            <p class="muted">
+              DNS is like the internet's address book. I used domain configuration to connect the client's custom web address to the hosted website so visitors could reach it using a real business domain.
+            </p>
+          </div>
+          <div class="stack-card">
+            <h3>Forminator Plugin</h3>
+            <p class="muted">
+              This plugin helped me create contact forms so visitors could submit information directly from the website instead of calling or emailing first.
+            </p>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Plain-English explanation:</strong> A website project is not just one thing. It usually includes the visual design, the content structure, the hosting setup, the domain connection, and the interactive parts like forms. I worked across all of those layers.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Step-by-Step Walkthrough</h2>
+          </div>
+          <p>
+            Below is the full process I followed, explained in a way that shows both the technical work and the real-world purpose behind each step.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step" data-step="01">
+            <h3>Understanding what the client needed</h3>
+            <p>
+              Before building anything, I first had to understand the purpose of the site. A website should not just exist to "look nice." It should solve a communication problem. In this case, the website needed to introduce the client professionally, present key information clearly, and make it easy for visitors to reach out.
+            </p>
+            <p>
+              This stage was important because it guided every other decision I made later. For example, the kind of pages I created, the order of information on those pages, and the type of form I added all depended on the client's goals.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Discovery</span>
+              <span class="tag">Business Goals</span>
+              <span class="tag">User Needs</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="02">
+            <h3>Choosing a practical website stack</h3>
+            <p>
+              I used <span class="callout">WordPress</span> because it is fast to work with, flexible for business websites, and easier for non-developers to maintain after launch. That matters in real client work because the project does not end the moment the website goes live. The client may later want to update text, add new pages, or change contact details.
+            </p>
+            <p>
+              I hosted the site on <span class="callout">AWS Lightsail</span>, which gave me a cloud server environment without the complexity of building a hosting setup completely from scratch. This was a smart middle ground: professional enough for real deployment, but simple enough to manage efficiently.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Platform Choice</span>
+              <span class="tag">Cloud Hosting</span>
+              <span class="tag">Maintainability</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="03">
+            <h3>Setting up the hosting environment</h3>
+            <p>
+              Once I chose the stack, I created the WordPress instance in AWS Lightsail. This is the step where the website gets its actual home online. Without hosting, a website design is just an idea. Hosting is what makes it real and accessible.
+            </p>
+            <p>
+              At this point, I had to make sure the server was running properly, WordPress was accessible, and the environment was ready for content and design work. This was part website setup and part infrastructure setup.
+            </p>
+            <p>
+              For non-technical readers: imagine renting a store space before decorating it. AWS Lightsail was the store space. WordPress was the system I used to arrange everything inside.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Deployment</span>
+              <span class="tag">Infrastructure</span>
+              <span class="tag">Environment Setup</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="04">
+            <h3>Connecting the custom domain with DNS</h3>
+            <p>
+              After the site existed on the server, I connected it to the business domain. This is a very important part of real website work because a site is not complete if people can only find it through a temporary server address.
+            </p>
+            <p>
+              DNS work can be confusing, but the easiest way to explain it is this: it tells the internet where to send people when they type in the website name. I configured the domain records so the custom web address pointed to the hosted site correctly.
+            </p>
+            <p>
+              This stage also involved checking for common issues such as the site not loading, domain propagation delays, and link mismatches. It taught me that website deployment is not just visual design. Networking and configuration matter too.
+            </p>
+            <div class="tag-row">
+              <span class="tag">DNS</span>
+              <span class="tag">Domain Mapping</span>
+              <span class="tag">Troubleshooting</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="05">
+            <h3>Designing the layout and organizing the content</h3>
+            <p>
+              Once the website infrastructure was ready, I focused on the user experience. I created and arranged the main pages so visitors could move through the site naturally. Instead of dumping all the information in one place, I split the content into meaningful sections.
+            </p>
+            <p>
+              This included thinking about what a first-time visitor would need to know right away. For example: Who is this business? What does it offer? Why should I trust it? How do I contact them? Good website structure answers those questions without making the user work too hard.
+            </p>
+            <p>
+              I also paid attention to visual hierarchy, which simply means showing the most important information first. Headings, spacing, sections, and call-to-action areas all helped guide the user through the site.
+            </p>
+            <div class="tag-row">
+              <span class="tag">UI/UX</span>
+              <span class="tag">Information Architecture</span>
+              <span class="tag">Content Design</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="06">
+            <h3>Building the contact workflow</h3>
+            <p>
+              A business website should not only provide information. It should also help convert interest into action. That is why the contact section mattered so much.
+            </p>
+            <p>
+              I used the <span class="callout">Forminator</span> plugin to build a contact form so visitors could send their details directly through the site. That made the experience more convenient and professional than telling users to search for an email address manually.
+            </p>
+            <p>
+              This part of the project also made me think beyond the form itself. A form is only useful if the submission actually reaches the business owner in a practical way. So the real goal was not just to place fields on the page, but to support communication and follow-up.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Forms</span>
+              <span class="tag">Lead Capture</span>
+              <span class="tag">Business Workflow</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="07">
+            <h3>Making sure the site worked well on different devices</h3>
+            <p>
+              People do not visit websites from one type of screen anymore. Some use phones, some use tablets, and some use laptops. Because of that, I tested the site layout on different screen sizes to make sure the content remained readable and the design still looked clean.
+            </p>
+            <p>
+              This matters because a site can look perfect on a desktop and still feel frustrating on a phone. Responsive design means the website adjusts so users do not have to zoom in, struggle to tap buttons, or read cluttered content.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Responsive Design</span>
+              <span class="tag">Mobile Experience</span>
+              <span class="tag">Usability Testing</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="08">
+            <h3>Troubleshooting real deployment issues</h3>
+            <p>
+              One of the most valuable parts of the project was solving the issues that came up during the build. In real-world tech work, projects almost never move from idea to launch with zero problems. Part of the job is knowing how to investigate what is wrong and fix it.
+            </p>
+            <p>
+              During this project, I worked through setup and connectivity issues related to areas like DNS, linking, page structure, plugin behavior, and general configuration. That experience strengthened my ability to not panic when something breaks, but instead work through the system step by step.
+            </p>
+            <p>
+              To me, this is one of the strongest signs of growth in a builder: not just making something when everything is easy, but getting it over the finish line when unexpected problems appear.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Debugging</span>
+              <span class="tag">Problem Solving</span>
+              <span class="tag">Production Readiness</span>
+            </div>
+          </article>
+
+          <article class="step" data-step="09">
+            <h3>Launching the website and thinking like an owner</h3>
+            <p>
+              Launching the site meant more than publishing pages. It meant making sure the experience was usable, the information was accurate, the domain worked, and the contact path was clear.
+            </p>
+            <p>
+              This final stage pushed me to think like both a developer and a business owner. A successful launch is not just about saying "the website is live." It is about asking whether the site actually serves the people who need it.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Go Live</span>
+              <span class="tag">Quality Check</span>
+              <span class="tag">Client Delivery</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>What This Project Looks Like in Plain English</h2>
+          </div>
+          <p>
+            This section is for non-technical readers. It explains the project as if I were describing it to someone outside of tech.
+          </p>
+        </div>
+
+        <div class="plain-grid">
+          <div class="plain-card">
+            <h3>I built the digital location</h3>
+            <p class="muted">
+              Just like a physical business needs a good location, a website needs a proper place online. I set that up through cloud hosting.
+            </p>
+          </div>
+          <div class="plain-card">
+            <h3>I organized the information</h3>
+            <p class="muted">
+              I structured the pages so visitors could quickly understand who the business is, what it offers, and what to do next.
+            </p>
+          </div>
+          <div class="plain-card">
+            <h3>I made communication easier</h3>
+            <p class="muted">
+              Instead of leaving visitors to figure things out on their own, I added a direct contact form to make reaching out simple.
+            </p>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Why this matters:</strong> Good digital work is not only about code. It is also about clarity, trust, ease of use, and creating smoother experiences for real people.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container two-col">
+        <div>
+          <div class="section-head">
+            <div>
+              <h2>Challenges I Worked Through</h2>
+            </div>
+          </div>
+          <div class="challenge-grid" style="grid-template-columns: 1fr;">
+            <div class="challenge-card">
+              <h3>Domain and DNS confusion</h3>
+              <p class="muted">
+                Domain configuration can feel invisible because you do not "see" it the same way you see a page design. But if it is wrong, the site does not load correctly. Working through that helped me better understand how websites are connected behind the scenes.
+              </p>
+            </div>
+            <div class="challenge-card">
+              <h3>Balancing design with simplicity</h3>
+              <p class="muted">
+                It is easy to overcrowd a business website. I had to decide what information mattered most and keep the layout clean enough that visitors would not feel lost.
+              </p>
+            </div>
+            <div class="challenge-card">
+              <h3>Making technical choices that support the client</h3>
+              <p class="muted">
+                I was not just building for myself. I had to think about what would be manageable, sustainable, and useful for the person who owns the site.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-head">
+            <div>
+              <h2>Skills This Project Demonstrates</h2>
+            </div>
+          </div>
+          <div class="challenge-grid" style="grid-template-columns: 1fr;">
+            <div class="challenge-card">
+              <h3>Technical setup</h3>
+              <p class="muted">Hosting, WordPress installation, plugin setup, and deployment work.</p>
+            </div>
+            <div class="challenge-card">
+              <h3>Problem-solving</h3>
+              <p class="muted">Debugging issues with domain connections, site behavior, and configuration.</p>
+            </div>
+            <div class="challenge-card">
+              <h3>User-centered thinking</h3>
+              <p class="muted">Designing the site based on what visitors need to see and do.</p>
+            </div>
+            <div class="challenge-card">
+              <h3>Communication</h3>
+              <p class="muted">Translating business needs into site structure, content, and functionality.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+
+        <div class="screenshot-grid">
+          <figure class="screenshot-card">
+            <img src="images/whitman1.png" alt="Whitman Behavioral Wellness home page screenshot" />
+            <figcaption>Home Page</figcaption>
+          </figure>
+          <figure class="screenshot-card">
+            <img src="images/whitman2.png" alt="Whitman Behavioral Wellness about page screenshot" />
+            <figcaption>About Page</figcaption>
+          </figure>
+          <figure class="screenshot-card">
+            <img src="images/whitman3.png" alt="Whitman Behavioral Wellness service page screenshot" />
+            <figcaption>Service Page</figcaption>
+          </figure>
+          <figure class="screenshot-card">
+            <img src="images/whitman4.png" alt="Whitman Behavioral Wellness contact page screenshot" />
+            <figcaption>Contact Page</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>What I Learned</h2>
+          </div>
+          <p>
+            Every project teaches something beyond the original task. These were some of the biggest lessons I took from this build.
+          </p>
+        </div>
+
+        <div class="takeaways">
+          <div class="takeaway">
+            <h3>Web projects are part design and part systems work</h3>
+            <p class="muted">
+              A good-looking page is only one piece of the job. Real website delivery also includes hosting, domain setup, plugins, testing, and launch readiness.
+            </p>
+          </div>
+          <div class="takeaway">
+            <h3>Clear structure makes a site feel professional</h3>
+            <p class="muted">
+              Users should never have to guess where to click next. Organizing content well is one of the most important parts of building trust online.
+            </p>
+          </div>
+          <div class="takeaway">
+            <h3>Troubleshooting is part of building</h3>
+            <p class="muted">
+              Technical projects do not become valuable because they are perfect. They become valuable because you can move them from problem to solution.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Final Reflection</h2>
+          </div>
+          <p>
+            This project helped me grow from simply “making a website” to thinking more like someone delivering a real solution.
+          </p>
+        </div>
+
+        <div class="faq">
+          <p>
+            What I am most proud of is that this project required both technical execution and practical judgment. I had to think about the client's needs, the visitor's experience, the hosting environment, the domain setup, and the site functionality all at once.
+          </p>
+          <p>
+            That balance is what makes this project meaningful in my portfolio. It shows that I can work across the full lifecycle of a digital product: planning it, building it, debugging it, and launching it in a way that supports real users.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-card">
+       
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
