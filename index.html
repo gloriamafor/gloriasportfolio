@@ -90,7 +90,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                     fetch("https://43ttskdu5m.execute-api.us-east-2.amazonaws.com/count")
                         .then(response => response.json())
                         .then(data => {
-                            document.getElementById("visitor-count").textContent = data.views;
+                            document.getElementById("visitor-count").innerText = data.views;
                         })
                         .catch(error => {
                             console.error("Error fetching visitor count:", error);
