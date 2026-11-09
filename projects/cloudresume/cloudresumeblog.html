@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How I Built the Cloud Resume Challenge | Gloria Nzoh-Ndem</title>
+  <meta name="description" content="A step by step case study of how I deployed my portfolio on AWS with the Cloud Resume Challenge, built a serverless visitor counter, hosted my personal projects, and later rebuilt the backend in Terraform." />
+  <style>
+    :root{
+      --bg:#0f1220;
+      --surface:#171b2e;
+      --surface-2:#1f2540;
+      --card:#ffffff;
+      --text:#e9ecf8;
+      --muted:#b7bfdc;
+      --accent:#8b5cf6;
+      --accent-2:#ec4899;
+      --line:rgba(255,255,255,.12);
+      --shadow:0 20px 45px rgba(0,0,0,.28);
+      --radius:22px;
+      --radius-sm:14px;
+      --max:980px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(139,92,246,.22), transparent 30%),
+        radial-gradient(circle at top right, rgba(236,72,153,.14), transparent 25%),
+        linear-gradient(180deg, #0d1020 0%, #11162a 42%, #0f1220 100%);
+      line-height:1.75;
+    }
+    a{color:#c9b8ff; text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{width:min(var(--max), calc(100% - 32px)); margin:0 auto}
+    .hero{padding:72px 0 36px}
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border:1px solid var(--line);
+      border-radius:999px; background:rgba(255,255,255,.04); color:#ddd7ff; font-size:.9rem; margin-bottom:20px;
+    }
+    h1,h2,h3{line-height:1.18; margin:0 0 16px; color:#fff}
+    h1{font-size:clamp(2.1rem, 5vw, 3.4rem); letter-spacing:-0.03em;}
+    h2{font-size:clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-0.02em; margin-top:8px;}
+    h3{font-size:1.2rem;}
+    p.lead{color:var(--muted); font-size:1.12rem; max-width:720px;}
+    .byline{color:var(--muted); font-size:.95rem; margin-top:18px}
+    .pill-row{display:flex; flex-wrap:wrap; gap:10px; margin:26px 0 8px;}
+    .pill{padding:9px 13px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--line); color:#efeefe; font-size:.9rem;}
+    .cta-row{display:flex; flex-wrap:wrap; gap:12px; margin-top:26px;}
+    .btn{display:inline-block; padding:13px 18px; border-radius:14px; font-weight:700; transition:transform .15s ease;}
+    .btn:hover{transform:translateY(-2px); text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; box-shadow:var(--shadow);}
+    .btn-secondary{border:1px solid var(--line); color:#f3f5ff; background:rgba(255,255,255,.04);}
+    section.block{padding:30px 0; border-top:1px solid var(--line);}
+    section.block:first-of-type{border-top:none}
+    .kicker{color:var(--accent); font-weight:700; letter-spacing:.02em; text-transform:uppercase; font-size:.82rem; margin-bottom:8px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid var(--line); border-radius:var(--radius-sm); padding:20px 22px; margin:18px 0; box-shadow:var(--shadow);}
+    .flow{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:22px 0;}
+    .node{padding:10px 14px; border-radius:12px; background:rgba(139,92,246,.16); border:1px solid rgba(139,92,246,.4); color:#efeafe; font-size:.92rem; font-weight:600; white-space:nowrap;}
+    .node.alt{background:rgba(236,72,153,.14); border-color:rgba(236,72,153,.4);}
+    .arrow{color:var(--accent-2); font-weight:800;}
+    ul{padding-left:20px} li{margin:8px 0}
+    code{background:rgba(255,255,255,.08); padding:2px 7px; border-radius:7px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em; color:#f1e9ff;}
+    pre{background:#0c0f1c; border:1px solid var(--line); border-radius:12px; padding:16px; overflow:auto; font-size:.86rem; line-height:1.55;}
+    pre code{background:none; padding:0; color:#d9e0ff;}
+    .note{border-left:3px solid var(--accent-2); padding:4px 0 4px 16px; color:var(--muted); margin:16px 0;}
+    .lessons li{margin:10px 0}
+    footer{padding:40px 0 70px; color:var(--muted); font-size:.92rem; border-top:1px solid var(--line); margin-top:10px;}
+    .tag{display:inline-block; font-size:.78rem; color:#cdbcff; border:1px solid var(--line); border-radius:999px; padding:3px 10px; margin-right:6px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="hero">
+      <span class="eyebrow">Cloud Project Case Study</span>
+      <h1>How I Built the Cloud Resume Challenge</h1>
+      <p class="lead">A step by step walk through of how I deployed my portfolio on AWS as a fully serverless site, built a visitor counter with Lambda and DynamoDB, hosted my personal projects on it, and later rebuilt the backend in Terraform to deepen my infrastructure-as-code skills.</p>
+      <div class="pill-row">
+        <span class="pill">Amazon S3</span>
+        <span class="pill">CloudFront</span>
+        <span class="pill">Route 53</span>
+        <span class="pill">AWS Lambda</span>
+        <span class="pill">DynamoDB</span>
+        <span class="pill">API Gateway</span>
+        <span class="pill">AWS SAM</span>
+        <span class="pill">Terraform</span>
+        <span class="pill">GitHub Actions</span>
+      </div>
+      <p class="byline">By Gloria Nzoh-Ndem</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://gloriamafor.com">View the live site</a>
+        <a class="btn btn-secondary" href="https://github.com/gloriamafor">See the code on GitHub</a>
+      </div>
+    </header>
+
+    <section class="block">
+      <div class="kicker">Why I did it</div>
+      <h2>Proving cloud skills by building, not just studying</h2>
+      <p>I wanted a way to show that I could work with real AWS services end to end, not just pass a quiz about them. The Cloud Resume Challenge is perfect for that: you host your resume as a live website and, by the time you are done, you have touched storage, a content delivery network, DNS, HTTPS certificates, serverless compute, a database, infrastructure as code, and automated deployments. Every major piece of cloud engineering in one project.</p>
+      <p>So I turned my portfolio at <a href="https://gloriamafor.com">gloriamafor.com</a> into that project, and then used it as a home for my personal applications too.</p>
+    </section>
+
+    <section class="block">
+      <div class="kicker">The big picture</div>
+      <h2>How the whole thing fits together</h2>
+      <p>There are two halves: a static frontend that serves my site, and a small serverless backend that powers a visitor counter.</p>
+      <h3>Frontend</h3>
+      <div class="flow">
+        <span class="node">Visitor</span><span class="arrow">&rarr;</span>
+        <span class="node">Route 53 (DNS)</span><span class="arrow">&rarr;</span>
+        <span class="node">CloudFront (CDN + HTTPS)</span><span class="arrow">&rarr;</span>
+        <span class="node">S3 (site files)</span>
+      </div>
+      <h3>Backend (visitor counter)</h3>
+      <div class="flow">
+        <span class="node alt">Browser</span><span class="arrow">&rarr;</span>
+        <span class="node alt">API Gateway</span><span class="arrow">&rarr;</span>
+        <span class="node alt">Lambda (Python)</span><span class="arrow">&rarr;</span>
+        <span class="node alt">DynamoDB</span>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="kicker">Part 1</div>
+      <h2>Hosting the portfolio from start to finish</h2>
+
+      <h3>Register the domain</h3>
+      <p>I registered <code>gloriamafor.com</code> through GoDaddy. The registrar owns the domain name, but it does not have to be the thing that answers DNS questions or hosts the site. I kept those jobs on AWS.</p>
+
+      <h3>Store the site in S3</h3>
+      <p>I created an Amazon S3 bucket and uploaded my static files: the HTML, CSS, JavaScript, images, and project pages. S3 is object storage, so there is no server to manage. It simply holds the files and hands them out.</p>
+
+      <h3>Put CloudFront in front of it</h3>
+      <p>I created a CloudFront distribution with the S3 bucket as its origin. CloudFront is a content delivery network, so it caches my site at edge locations around the world, which makes it load faster, and it is also where HTTPS is handled.</p>
+
+      <h3>Point the domain at AWS with Route 53</h3>
+      <p>I created a hosted zone in Route 53, then went back to GoDaddy and replaced its nameservers with the Route 53 ones. That is called delegation: GoDaddy still owns the registration, but Route 53 now answers for the domain. Then I added records that point the domain at my CloudFront distribution.</p>
+
+      <h3>Turn on HTTPS with ACM</h3>
+      <p>I requested a TLS certificate from AWS Certificate Manager and validated it through DNS. One detail that trips people up: for CloudFront, the certificate has to live in the <code>us-east-1</code> region, no matter where the rest of your resources are. Once it was attached, the site served securely over HTTPS.</p>
+
+      <div class="note">At this point I had a live, secure, globally distributed portfolio, with no server to patch anywhere.</div>
+    </section>
+
+    <section class="block">
+      <div class="kicker">Part 2</div>
+      <h2>The serverless visitor counter</h2>
+      <p>A static site cannot count its own visitors, so I built a tiny backend that does. Nothing runs until someone loads the page.</p>
+
+      <h3>DynamoDB for the count</h3>
+      <p>I created a DynamoDB table called <code>portfolio-visitor-count</code> with on-demand billing, so I only pay per request. It holds a single item with the running total. The important trick is how I update it:</p>
+      <pre><code>table.update_item(
+    Key={"id": "visitorCount"},
+    UpdateExpression="ADD #views :increment",
+    ExpressionAttributeNames={"#views": "views"},
+    ExpressionAttributeValues={":increment": 1},
+    ReturnValues="UPDATED_NEW"
+)</code></pre>
+      <p>Using <code>ADD</code> increments the number inside DynamoDB in one atomic operation. If I had read the value, added one in my code, and written it back, two visitors arriving at the same time could overwrite each other and the count would drift. The atomic add avoids that completely.</p>
+
+      <h3>Lambda for the logic</h3>
+      <p>The code above lives in an AWS Lambda function written in Python. Lambda only runs when it is called, scales on its own, and I never manage a server. It reads the table name from an environment variable and has permission to touch only that one table, which is the least-privilege approach.</p>
+
+      <h3>API Gateway for the endpoint</h3>
+      <p>To let my website call the function, I put an API Gateway HTTP API in front of it with a single route, <code>GET /count</code>. The function also returns CORS headers so the browser is allowed to call it from my domain. My site's JavaScript calls that endpoint on load and displays the number it gets back.</p>
+    </section>
+
+    <section class="block">
+      <div class="kicker">Part 3</div>
+      <h2>Infrastructure as code and automated deploys</h2>
+      <p>Clicking around the AWS console is fine for learning, but it is not repeatable. So I defined the backend as code.</p>
+      <h3>AWS SAM</h3>
+      <p>I used AWS SAM, which is a shorthand layer on top of CloudFormation built for serverless apps. One template file describes the DynamoDB table, the Lambda, its permissions, and the API, and <code>sam deploy</code> builds it all. That means I can tear the whole backend down and stand it back up from one file.</p>
+      <h3>CI/CD with GitHub Actions</h3>
+      <p>I set up a GitHub Actions workflow so that every time I push to my main branch, it runs my tests first, and only if they pass does it build and deploy the backend. A failed test cancels the deploy, so I cannot ship something broken by accident.</p>
+    </section>
+
+    <section class="block">
+      <div class="kicker">Part 4</div>
+      <h2>Hosting my personal projects on the cloud</h2>
+      <p>Once the portfolio was live, I used it as a home for the projects I had built.</p>
+
+      <h3>Food Recommendation Generator</h3>
+      <p>This one is a web app that suggests recipes. The frontend is static, so it lives in S3 and is served through CloudFront like the rest of the site. The recommendation logic is Python, and because S3 cannot run Python, I adapted that logic into a Lambda function and exposed it through API Gateway, so the browser frontend can call it for live recommendations. It is an ETL-style workflow: it pulls recipe data from an external source, transforms and filters it, and returns structured results.</p>
+
+      <h3>Movie AI Recommendation System</h3>
+      <p>My mood-based movie recommender runs as a live Streamlit app, so rather than rebuild it on AWS I showcased it on the portfolio and linked out to the running application. Sometimes the right call is to host a project where it already works well and point people to it.</p>
+
+      <h3>Marital Satisfaction Prediction Model</h3>
+      <p>This is a machine learning project, so I presented it as a showcase: the write-up, the charts, and the results, all served as part of the static site.</p>
+    </section>
+
+    <section class="block">
+      <div class="kicker">Part 5</div>
+      <h2>Taking it further: rebuilding the backend in Terraform</h2>
+      <p>I originally deployed the backend with SAM because that is what I knew at the time. As I started learning Terraform, I went back and rebuilt the same backend in it, on purpose, to practice an infrastructure-as-code tool that works across clouds, not just AWS.</p>
+      <p>In Terraform there is no serverless shorthand, so I had to write each piece out explicitly: the DynamoDB table, the Lambda's IAM role and a least-privilege policy, the function itself (packaged with an <code>archive_file</code> instead of <code>sam build</code>), and the HTTP API with its integration, route, stage, and the permission that lets API Gateway invoke the function. Writing it all out actually helped me understand what SAM had been doing for me quietly.</p>
+      <div class="note">A real bug I hit, and how I fixed it: my first <code>terraform apply</code> failed with <code>ResourceInUseException: Table already exists</code>. My old SAM stack still owned the table name, and two tools cannot manage the same named resource. I deleted the SAM stack, re-applied, and let Terraform own the backend cleanly. Then I updated the frontend to the new API URL and invalidated the CloudFront cache, because updating a file in S3 does not change what CloudFront is already serving.</div>
+      <p>That is the kind of lesson you only get by actually deploying something and watching it break.</p>
+    </section>
+
+    <section class="block">
+      <div class="kicker">What broke, and what I learned</div>
+      <h2>Troubleshooting and lessons</h2>
+      <ul class="lessons">
+        <li><strong>HTTP versus HTTPS:</strong> getting CloudFront and the ACM certificate working together so the site is secure, including the detail that the cert must be in <code>us-east-1</code>.</li>
+        <li><strong>403 Access Denied from S3:</strong> sorting out how CloudFront is allowed to read the bucket.</li>
+        <li><strong>DNS delegation:</strong> coordinating GoDaddy's nameservers with the Route 53 hosted zone so the domain resolves to CloudFront.</li>
+        <li><strong>CORS:</strong> making sure the API returns the right headers so the browser is allowed to call it.</li>
+        <li><strong>Lost updates:</strong> using an atomic DynamoDB add so simultaneous visitors cannot overwrite the count.</li>
+        <li><strong>CloudFront caching:</strong> remembering to invalidate the cache after a change, because the edge keeps serving the old files until you do.</li>
+        <li><strong>One name, one owner:</strong> you cannot have SAM and Terraform both managing a resource with the same name. Pick one.</li>
+      </ul>
+    </section>
+
+    <section class="block">
+      <div class="kicker">Where I would take it next</div>
+      <h2>What I'd improve</h2>
+      <ul>
+        <li>Swap the long-lived AWS keys in my deploy pipeline for OIDC, so GitHub Actions assumes a short-lived role instead of storing static secrets.</li>
+        <li>Put the frontend in infrastructure as code too, so the S3 and CloudFront setup is codified alongside the backend.</li>
+        <li>Scope the API's CORS to just my domain instead of allowing any origin.</li>
+        <li>Move Terraform's state to a shared remote backend, so it could be managed by a team instead of from my laptop.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p><span class="tag">AWS</span><span class="tag">Serverless</span><span class="tag">Terraform</span><span class="tag">IaC</span><span class="tag">CI/CD</span></p>
+      <p>Thanks for reading. You can see this project live at <a href="https://gloriamafor.com">gloriamafor.com</a> and the code on <a href="https://github.com/gloriamafor">GitHub</a>.</p>
+      <p>Gloria Nzoh-Ndem</p>
+    </footer>
+
+  </div>
+</body>
+</html>
